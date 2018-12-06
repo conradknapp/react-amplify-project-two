@@ -10,9 +10,14 @@ export const getAlbum = `query GetAlbum($id: ID!) {
       items {
         id
         bucket
+        key
+        description
+        price
+        createdAt
       }
       nextToken
     }
+    createdAt
   }
 }
 `;
@@ -30,9 +35,14 @@ export const listAlbums = `query ListAlbums(
         items {
           id
           bucket
+          key
+          description
+          price
+          createdAt
         }
         nextToken
       }
+      createdAt
     }
     nextToken
   }
@@ -45,18 +55,13 @@ export const getPhoto = `query GetPhoto($id: ID!) {
       id
       name
       owner
+      createdAt
     }
     bucket
-    fullsize {
-      key
-      width
-      height
-    }
-    thumbnail {
-      key
-      width
-      height
-    }
+    key
+    description
+    price
+    createdAt
   }
 }
 `;
@@ -72,18 +77,89 @@ export const listPhotos = `query ListPhotos(
         id
         name
         owner
+        createdAt
       }
       bucket
-      fullsize {
+      key
+      description
+      price
+      createdAt
+    }
+    nextToken
+  }
+}
+`;
+export const getUser = `query GetUser($id: ID!) {
+  getUser(id: $id) {
+    id
+    username
+    userPurchases {
+      items {
+        id
+        bucket
         key
-        width
-        height
+        description
+        price
+        createdAt
       }
-      thumbnail {
-        key
-        width
-        height
+      nextToken
+    }
+  }
+}
+`;
+export const listUsers = `query ListUsers(
+  $filter: ModelUserFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listUsers(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      username
+      userPurchases {
+        items {
+          id
+          bucket
+          key
+          description
+          price
+          createdAt
+        }
+        nextToken
       }
+    }
+    nextToken
+  }
+}
+`;
+export const searchAlbums = `query SearchAlbums(
+  $filter: SearchableAlbumFilterInput
+  $sort: SearchableAlbumSortInput
+  $limit: Int
+  $nextToken: Int
+) {
+  searchAlbums(
+    filter: $filter
+    sort: $sort
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      id
+      name
+      owner
+      photos {
+        items {
+          id
+          bucket
+          key
+          description
+          price
+          createdAt
+        }
+        nextToken
+      }
+      createdAt
     }
     nextToken
   }

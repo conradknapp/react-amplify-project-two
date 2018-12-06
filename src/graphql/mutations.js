@@ -10,9 +10,14 @@ export const createAlbum = `mutation CreateAlbum($input: CreateAlbumInput!) {
       items {
         id
         bucket
+        key
+        description
+        price
+        createdAt
       }
       nextToken
     }
+    createdAt
   }
 }
 `;
@@ -25,9 +30,14 @@ export const updateAlbum = `mutation UpdateAlbum($input: UpdateAlbumInput!) {
       items {
         id
         bucket
+        key
+        description
+        price
+        createdAt
       }
       nextToken
     }
+    createdAt
   }
 }
 `;
@@ -40,9 +50,14 @@ export const deleteAlbum = `mutation DeleteAlbum($input: DeleteAlbumInput!) {
       items {
         id
         bucket
+        key
+        description
+        price
+        createdAt
       }
       nextToken
     }
+    createdAt
   }
 }
 `;
@@ -53,18 +68,13 @@ export const createPhoto = `mutation CreatePhoto($input: CreatePhotoInput!) {
       id
       name
       owner
+      createdAt
     }
     bucket
-    fullsize {
-      key
-      width
-      height
-    }
-    thumbnail {
-      key
-      width
-      height
-    }
+    key
+    description
+    price
+    createdAt
   }
 }
 `;
@@ -75,18 +85,13 @@ export const updatePhoto = `mutation UpdatePhoto($input: UpdatePhotoInput!) {
       id
       name
       owner
+      createdAt
     }
     bucket
-    fullsize {
-      key
-      width
-      height
-    }
-    thumbnail {
-      key
-      width
-      height
-    }
+    key
+    description
+    price
+    createdAt
   }
 }
 `;
@@ -97,17 +102,66 @@ export const deletePhoto = `mutation DeletePhoto($input: DeletePhotoInput!) {
       id
       name
       owner
+      createdAt
     }
     bucket
-    fullsize {
-      key
-      width
-      height
+    key
+    description
+    price
+    createdAt
+  }
+}
+`;
+export const createUser = `mutation CreateUser($input: CreateUserInput!) {
+  createUser(input: $input) {
+    id
+    username
+    userPurchases {
+      items {
+        id
+        bucket
+        key
+        description
+        price
+        createdAt
+      }
+      nextToken
     }
-    thumbnail {
-      key
-      width
-      height
+  }
+}
+`;
+export const updateUser = `mutation UpdateUser($input: UpdateUserInput!) {
+  updateUser(input: $input) {
+    id
+    username
+    userPurchases {
+      items {
+        id
+        bucket
+        key
+        description
+        price
+        createdAt
+      }
+      nextToken
+    }
+  }
+}
+`;
+export const deleteUser = `mutation DeleteUser($input: DeleteUserInput!) {
+  deleteUser(input: $input) {
+    id
+    username
+    userPurchases {
+      items {
+        id
+        bucket
+        key
+        description
+        price
+        createdAt
+      }
+      nextToken
     }
   }
 }

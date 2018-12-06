@@ -10,9 +10,14 @@ export const onCreateAlbum = `subscription OnCreateAlbum {
       items {
         id
         bucket
+        key
+        description
+        price
+        createdAt
       }
       nextToken
     }
+    createdAt
   }
 }
 `;
@@ -25,9 +30,14 @@ export const onUpdateAlbum = `subscription OnUpdateAlbum {
       items {
         id
         bucket
+        key
+        description
+        price
+        createdAt
       }
       nextToken
     }
+    createdAt
   }
 }
 `;
@@ -40,9 +50,14 @@ export const onDeleteAlbum = `subscription OnDeleteAlbum {
       items {
         id
         bucket
+        key
+        description
+        price
+        createdAt
       }
       nextToken
     }
+    createdAt
   }
 }
 `;
@@ -53,18 +68,13 @@ export const onCreatePhoto = `subscription OnCreatePhoto {
       id
       name
       owner
+      createdAt
     }
     bucket
-    fullsize {
-      key
-      width
-      height
-    }
-    thumbnail {
-      key
-      width
-      height
-    }
+    key
+    description
+    price
+    createdAt
   }
 }
 `;
@@ -75,18 +85,13 @@ export const onUpdatePhoto = `subscription OnUpdatePhoto {
       id
       name
       owner
+      createdAt
     }
     bucket
-    fullsize {
-      key
-      width
-      height
-    }
-    thumbnail {
-      key
-      width
-      height
-    }
+    key
+    description
+    price
+    createdAt
   }
 }
 `;
@@ -97,17 +102,66 @@ export const onDeletePhoto = `subscription OnDeletePhoto {
       id
       name
       owner
+      createdAt
     }
     bucket
-    fullsize {
-      key
-      width
-      height
+    key
+    description
+    price
+    createdAt
+  }
+}
+`;
+export const onCreateUser = `subscription OnCreateUser {
+  onCreateUser {
+    id
+    username
+    userPurchases {
+      items {
+        id
+        bucket
+        key
+        description
+        price
+        createdAt
+      }
+      nextToken
     }
-    thumbnail {
-      key
-      width
-      height
+  }
+}
+`;
+export const onUpdateUser = `subscription OnUpdateUser {
+  onUpdateUser {
+    id
+    username
+    userPurchases {
+      items {
+        id
+        bucket
+        key
+        description
+        price
+        createdAt
+      }
+      nextToken
+    }
+  }
+}
+`;
+export const onDeleteUser = `subscription OnDeleteUser {
+  onDeleteUser {
+    id
+    username
+    userPurchases {
+      items {
+        id
+        bucket
+        key
+        description
+        price
+        createdAt
+      }
+      nextToken
     }
   }
 }
