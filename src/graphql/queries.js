@@ -5,18 +5,19 @@ export const getAlbum = `query GetAlbum($id: ID!) {
   getAlbum(id: $id) {
     id
     name
-    owner
     photos {
       items {
         id
+        description
         bucket
         key
-        description
         price
+        owner
         createdAt
       }
       nextToken
     }
+    owner
     createdAt
   }
 }
@@ -30,18 +31,19 @@ export const listAlbums = `query ListAlbums(
     items {
       id
       name
-      owner
       photos {
         items {
           id
+          description
           bucket
           key
-          description
           price
+          owner
           createdAt
         }
         nextToken
       }
+      owner
       createdAt
     }
     nextToken
@@ -51,6 +53,7 @@ export const listAlbums = `query ListAlbums(
 export const getPhoto = `query GetPhoto($id: ID!) {
   getPhoto(id: $id) {
     id
+    description
     album {
       id
       name
@@ -59,8 +62,8 @@ export const getPhoto = `query GetPhoto($id: ID!) {
     }
     bucket
     key
-    description
     price
+    owner
     createdAt
   }
 }
@@ -73,6 +76,7 @@ export const listPhotos = `query ListPhotos(
   listPhotos(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
+      description
       album {
         id
         name
@@ -81,8 +85,8 @@ export const listPhotos = `query ListPhotos(
       }
       bucket
       key
-      description
       price
+      owner
       createdAt
     }
     nextToken
@@ -93,13 +97,10 @@ export const getUser = `query GetUser($id: ID!) {
   getUser(id: $id) {
     id
     username
-    userPurchases {
+    registered
+    orders {
       items {
         id
-        bucket
-        key
-        description
-        price
         createdAt
       }
       nextToken
@@ -116,17 +117,63 @@ export const listUsers = `query ListUsers(
     items {
       id
       username
-      userPurchases {
+      registered
+      orders {
         items {
           id
-          bucket
-          key
-          description
-          price
           createdAt
         }
         nextToken
       }
+    }
+    nextToken
+  }
+}
+`;
+export const getOrder = `query GetOrder($id: ID!) {
+  getOrder(id: $id) {
+    id
+    photo {
+      id
+      description
+      bucket
+      key
+      price
+      owner
+      createdAt
+    }
+    user {
+      id
+      username
+      registered
+    }
+    createdAt
+  }
+}
+`;
+export const listOrders = `query ListOrders(
+  $filter: ModelOrderFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      photo {
+        id
+        description
+        bucket
+        key
+        price
+        owner
+        createdAt
+      }
+      user {
+        id
+        username
+        registered
+      }
+      createdAt
     }
     nextToken
   }
@@ -147,18 +194,19 @@ export const searchAlbums = `query SearchAlbums(
     items {
       id
       name
-      owner
       photos {
         items {
           id
+          description
           bucket
           key
-          description
           price
+          owner
           createdAt
         }
         nextToken
       }
+      owner
       createdAt
     }
     nextToken

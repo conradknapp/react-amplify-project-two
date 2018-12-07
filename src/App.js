@@ -7,12 +7,25 @@ import Amplify, { Auth, API, graphqlOperation, Storage, Hub, Logger
 } from "aws-amplify";
 // prettier-ignore
 import { Divider, Form, Grid, Header, Input, List, Button } from "semantic-ui-react";
-import { BrowserRouter as Router, Route, NavLink } from "react-router-dom";
+import { Router, Route, NavLink } from "react-router-dom";
+import createBrowserHistory from "history/createBrowserHistory";
 import StripeCheckout from "react-stripe-checkout";
 import { getUser, getAlbum, listAlbums, searchAlbums } from "./graphql/queries";
-import { createAlbum, createPhoto, createUser } from "./graphql/mutations";
+import {
+  createAlbum,
+  createPhoto,
+  createUser,
+  deletePhoto,
+  createOrder
+} from "./graphql/mutations";
 import { onCreateAlbum, onCreatePhoto } from "./graphql/subscriptions";
 Amplify.configure(aws_exports);
+
+const stripeConfig = {
+  currency: "USD",
+  publishableAPIKey: "pk_test_CN8uG9E9KDNxI7xVtdN1U5Be"
+};
+const history = createBrowserHistory();
 
 // window.LOG_LEVEL = "DEBUG";
 
@@ -152,7 +165,7 @@ const AlbumDetails = ({ id, currentUser }) => (
     {({ data: { getAlbum }, loading, errors }) => {
       if (loading || !getAlbum) return <h3>Loading...</h3>;
       if (errors.length > 0) return <div>{JSON.stringify(errors)}</div>;
-      const isAlbumCreator = currentUser === getAlbum.owner;
+      const isAlbumCreator = currentUser.username === getAlbum.owner;
       // console.log(getAlbum);
       return (
         <>
@@ -171,46 +184,95 @@ const convertDollarsToStripe = price => price * 100;
 const convertStripeToDollars = integer => (integer / 100).toFixed(2);
 
 const PhotoList = ({ photos }) =>
-  photos.map(photo => (
-    <div key={photo.key}>
-      <PayButton price={photo.price} description={photo.description} />
-      <S3Image
-        imgKey={photo.key}
-        theme={{ photoImg: { width: "300px", height: "auto" } }}
-      />
-      <h2>{photo.description}</h2>
-      <h3>${convertStripeToDollars(photo.price)}</h3>
-    </div>
-  ));
+  photos.map(photo => <Photo key={photo.key} photo={photo} />);
 
-const PayButton = ({ price, description }) => {
-  const onToken = async token => {
-    const data = await API.post("stripelambda", "/items", {
-      body: {
-        token,
-        charge: {
-          amount: convertDollarsToStripe(price),
-          currency: "USD",
-          description
-          // amount: this.props.amount,
-          // currency: config.stripe.currency,
+const Photo = ({ photo }) => {
+  const handleDeletePhoto = async id => {
+    const payload = { id };
+    await API.graphql(graphqlOperation(deletePhoto, { input: payload }));
+  };
+
+  return (
+    <UserContext.Consumer>
+      {({ currentUser }) => {
+        // console.log({ currentUser }, { photo });
+        const isPhotoCreator = currentUser.username === photo.owner;
+
+        return (
+          <>
+            <span>
+              {!isPhotoCreator && (
+                <PayButton
+                  photoId={photo.id}
+                  currentUser={currentUser}
+                  price={photo.price}
+                  description={photo.description}
+                />
+              )}
+              {isPhotoCreator && (
+                <Button
+                  circular
+                  color="red"
+                  icon="trash alternate"
+                  onClick={() => handleDeletePhoto(photo.id)}
+                />
+              )}
+            </span>
+            <S3Image
+              imgKey={photo.key}
+              theme={{ photoImg: { width: "300px", height: "auto" } }}
+            />
+            <h2>{photo.description}</h2>
+            <h3>${convertStripeToDollars(photo.price)}</h3>
+          </>
+        );
+      }}
+    </UserContext.Consumer>
+  );
+};
+
+const PayButton = ({ price, description, currentUser, photoId }) => {
+  const handlePurchase = async token => {
+    try {
+      const result = await API.post("stripelambda", "/items", {
+        body: {
+          token,
+          charge: {
+            amount: convertDollarsToStripe(price),
+            currency: stripeConfig.currency,
+            description
+          }
         }
+      });
+      console.log(result);
+      if (result.charge.status === "succeeded") {
+        // show toast message and redirect back home
+        console.log(result.message);
+        // new id of what we want to update and what we want to update the user with
+        const payload = {
+          orderUserId: currentUser.attributes.sub,
+          orderPhotoId: photoId
+        };
+        // console.log({ payload });
+        const order = await API.graphql(
+          graphqlOperation(createOrder, { input: payload })
+        );
+        console.log({ order });
+        history.push("/");
       }
-    });
-    console.log(data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <StripeCheckout
       name={description}
-      token={onToken}
+      token={handlePurchase}
       amount={price}
-      currency="USD"
-      stripeKey="pk_test_CN8uG9E9KDNxI7xVtdN1U5Be"
+      currency={stripeConfig.currency}
+      stripeKey={stripeConfig.publishableAPIKey}
       allowRememberMe={false}
-      // amount={this.props.amount}
-      // currency={config.stripe.currency}
-      // stripeKey={config.stripe.apiKey} // Stripe publishable API Key
     />
   );
 };
@@ -219,7 +281,7 @@ const initialState = {
   file: null,
   description: "",
   price: "",
-  isSubmitting: false
+  isUploading: false
 };
 
 class NewPhoto extends React.Component {
@@ -240,14 +302,14 @@ class NewPhoto extends React.Component {
   handleSubmit = async event => {
     event.preventDefault();
 
-    this.setState({ isSubmitting: true });
+    this.setState({ isUploading: true });
     // const { identityId } = await Auth.currentCredentials();
     const filename = `${Date.now()}-${this.state.file.name}`;
-    const storedImage = await Storage.put(filename, this.state.file, {
+    const uploadedImage = await Storage.put(filename, this.state.file, {
       contentType: this.state.file.type
     });
     const payload = {
-      key: storedImage.key,
+      key: uploadedImage.key,
       price: convertDollarsToStripe(this.state.price),
       description: this.state.description,
       photoAlbumId: this.props.albumId,
@@ -262,15 +324,15 @@ class NewPhoto extends React.Component {
   };
 
   render() {
-    const { file, description, price, isSubmitting } = this.state;
+    const { file, description, price, isUploading } = this.state;
 
     return (
       <>
         <Form.Button
           onClick={this.handleSubmit}
-          disabled={!file || !description || !price || isSubmitting}
+          disabled={!file || !description || !price || isUploading}
           icon="file image outline"
-          content={isSubmitting ? "Uploading..." : "Add Image"}
+          content={isUploading ? "Uploading..." : "Add Image"}
         />
         <input type="file" accept="image/*" onChange={this.handleFileChange} />
         <Input
@@ -349,24 +411,38 @@ const logger = new Logger("authLogger");
 
 logger.onHubCapsule = async capsule => {
   if (capsule.payload.event === "signIn") {
-    // const payload = {
-    //   id: capsule.payload.data.userSub,
-    //   username: capsule.payload.data.username
-    // };
+    // console.log(capsule.payload);
+    const getUserPayload = {
+      id: capsule.payload.data.signInUserSession.idToken.payload.sub
+    };
     // const result = await Auth.currentAuthenticatedUser();
+    // console.log(result);
     // const payload = {
     //   id: result.attributes.sub,
     //   username: result.username
     // };
-    // const user = await API.graphql(
-    //   graphqlOperation(createUser, {
-    //     input: payload
-    //   })
-    // );
-    // console.log({ user });
+    const { data } = await API.graphql(
+      graphqlOperation(getUser, getUserPayload)
+    );
+
+    if (!data.getUser || !data.getUser.registered) {
+      const createUserPayload = {
+        ...getUserPayload,
+        username: capsule.payload.data.username,
+        registered: true
+      };
+      const newUser = await API.graphql(
+        graphqlOperation(createUser, {
+          input: createUserPayload
+        })
+      );
+      console.log({ newUser });
+    }
   }
 };
 Hub.listen("auth", logger);
+
+const UserContext = React.createContext();
 
 class App extends React.Component {
   state = {
@@ -375,35 +451,37 @@ class App extends React.Component {
 
   async componentDidMount() {
     const user = await Auth.currentUserInfo();
-    this.setState({ currentUser: user.username });
+    this.setState({ currentUser: user });
   }
 
   render() {
     return (
-      <Router>
-        <Grid padded>
-          <Grid.Column>
-            <Route path="/" exact component={Home} />
+      <Router history={history}>
+        <UserContext.Provider
+          value={{
+            currentUser: this.state.currentUser
+          }}
+        >
+          <Grid padded>
+            <Grid.Column>
+              <Route path="/" exact component={Home} />
 
-            <Route
-              path="/albums/:albumId"
-              render={() => (
-                <>
-                  <NavLink to="/">Back to Albums list</NavLink>
-                </>
-              )}
-            />
-            <Route
-              path="/albums/:albumId"
-              render={({ match }) => (
-                <AlbumDetails
-                  id={match.params.albumId}
-                  currentUser={this.state.currentUser}
-                />
-              )}
-            />
-          </Grid.Column>
-        </Grid>
+              <Route
+                path="/albums/:albumId"
+                render={() => <NavLink to="/">Back to Albums list</NavLink>}
+              />
+              <Route
+                path="/albums/:albumId"
+                render={({ match }) => (
+                  <AlbumDetails
+                    id={match.params.albumId}
+                    currentUser={this.state.currentUser}
+                  />
+                )}
+              />
+            </Grid.Column>
+          </Grid>
+        </UserContext.Provider>
       </Router>
     );
   }
@@ -413,11 +491,11 @@ const myTheme = {
   ...AmplifyTheme,
   sectionHeader: {
     ...AmplifyTheme.sectionHeader,
-    backgroundColor: "#ff6600"
+    backgroundColor: "#f60"
   }
 };
 
 export default withAuthenticator(App, true, [], null, myTheme);
 
-// User 1: Yoi21522@iencm.com
-// User 2: Caq50704@iencm.com
+// User 1: Mww86379@ebbob.com
+// User 2: Mec81194@ebbob.com

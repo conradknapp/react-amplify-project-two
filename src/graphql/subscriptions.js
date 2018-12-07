@@ -5,18 +5,19 @@ export const onCreateAlbum = `subscription OnCreateAlbum {
   onCreateAlbum {
     id
     name
-    owner
     photos {
       items {
         id
+        description
         bucket
         key
-        description
         price
+        owner
         createdAt
       }
       nextToken
     }
+    owner
     createdAt
   }
 }
@@ -25,18 +26,19 @@ export const onUpdateAlbum = `subscription OnUpdateAlbum {
   onUpdateAlbum {
     id
     name
-    owner
     photos {
       items {
         id
+        description
         bucket
         key
-        description
         price
+        owner
         createdAt
       }
       nextToken
     }
+    owner
     createdAt
   }
 }
@@ -45,18 +47,19 @@ export const onDeleteAlbum = `subscription OnDeleteAlbum {
   onDeleteAlbum {
     id
     name
-    owner
     photos {
       items {
         id
+        description
         bucket
         key
-        description
         price
+        owner
         createdAt
       }
       nextToken
     }
+    owner
     createdAt
   }
 }
@@ -64,6 +67,7 @@ export const onDeleteAlbum = `subscription OnDeleteAlbum {
 export const onCreatePhoto = `subscription OnCreatePhoto {
   onCreatePhoto {
     id
+    description
     album {
       id
       name
@@ -72,8 +76,8 @@ export const onCreatePhoto = `subscription OnCreatePhoto {
     }
     bucket
     key
-    description
     price
+    owner
     createdAt
   }
 }
@@ -81,6 +85,7 @@ export const onCreatePhoto = `subscription OnCreatePhoto {
 export const onUpdatePhoto = `subscription OnUpdatePhoto {
   onUpdatePhoto {
     id
+    description
     album {
       id
       name
@@ -89,8 +94,8 @@ export const onUpdatePhoto = `subscription OnUpdatePhoto {
     }
     bucket
     key
-    description
     price
+    owner
     createdAt
   }
 }
@@ -98,6 +103,7 @@ export const onUpdatePhoto = `subscription OnUpdatePhoto {
 export const onDeletePhoto = `subscription OnDeletePhoto {
   onDeletePhoto {
     id
+    description
     album {
       id
       name
@@ -106,8 +112,8 @@ export const onDeletePhoto = `subscription OnDeletePhoto {
     }
     bucket
     key
-    description
     price
+    owner
     createdAt
   }
 }
@@ -116,13 +122,10 @@ export const onCreateUser = `subscription OnCreateUser {
   onCreateUser {
     id
     username
-    userPurchases {
+    registered
+    orders {
       items {
         id
-        bucket
-        key
-        description
-        price
         createdAt
       }
       nextToken
@@ -134,13 +137,10 @@ export const onUpdateUser = `subscription OnUpdateUser {
   onUpdateUser {
     id
     username
-    userPurchases {
+    registered
+    orders {
       items {
         id
-        bucket
-        key
-        description
-        price
         createdAt
       }
       nextToken
@@ -152,17 +152,77 @@ export const onDeleteUser = `subscription OnDeleteUser {
   onDeleteUser {
     id
     username
-    userPurchases {
+    registered
+    orders {
       items {
         id
-        bucket
-        key
-        description
-        price
         createdAt
       }
       nextToken
     }
+  }
+}
+`;
+export const onCreateOrder = `subscription OnCreateOrder {
+  onCreateOrder {
+    id
+    photo {
+      id
+      description
+      bucket
+      key
+      price
+      owner
+      createdAt
+    }
+    user {
+      id
+      username
+      registered
+    }
+    createdAt
+  }
+}
+`;
+export const onUpdateOrder = `subscription OnUpdateOrder {
+  onUpdateOrder {
+    id
+    photo {
+      id
+      description
+      bucket
+      key
+      price
+      owner
+      createdAt
+    }
+    user {
+      id
+      username
+      registered
+    }
+    createdAt
+  }
+}
+`;
+export const onDeleteOrder = `subscription OnDeleteOrder {
+  onDeleteOrder {
+    id
+    photo {
+      id
+      description
+      bucket
+      key
+      price
+      owner
+      createdAt
+    }
+    user {
+      id
+      username
+      registered
+    }
+    createdAt
   }
 }
 `;
