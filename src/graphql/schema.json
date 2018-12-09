@@ -15,7 +15,7 @@
         "name" : "Query",
         "description" : null,
         "fields" : [ {
-          "name" : "getAlbum",
+          "name" : "getMarket",
           "description" : null,
           "args" : [ {
             "name" : "id",
@@ -33,20 +33,20 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Album",
+            "name" : "Market",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "listAlbums",
+          "name" : "listMarkets",
           "description" : null,
           "args" : [ {
             "name" : "filter",
             "description" : null,
             "type" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "ModelAlbumFilterInput",
+              "name" : "ModelMarketFilterInput",
               "ofType" : null
             },
             "defaultValue" : null
@@ -71,13 +71,13 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "ModelAlbumConnection",
+            "name" : "ModelMarketConnection",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "getPhoto",
+          "name" : "getProduct",
           "description" : null,
           "args" : [ {
             "name" : "id",
@@ -95,20 +95,20 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Photo",
+            "name" : "Product",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "listPhotos",
+          "name" : "listProducts",
           "description" : null,
           "args" : [ {
             "name" : "filter",
             "description" : null,
             "type" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "ModelPhotoFilterInput",
+              "name" : "ModelProductFilterInput",
               "ofType" : null
             },
             "defaultValue" : null
@@ -133,7 +133,7 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "ModelPhotoConnection",
+            "name" : "ModelProductConnection",
             "ofType" : null
           },
           "isDeprecated" : false,
@@ -163,14 +163,14 @@
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "searchAlbums",
+          "name" : "searchMarkets",
           "description" : null,
           "args" : [ {
             "name" : "filter",
             "description" : null,
             "type" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "SearchableAlbumFilterInput",
+              "name" : "SearchableMarketFilterInput",
               "ofType" : null
             },
             "defaultValue" : null
@@ -179,7 +179,7 @@
             "description" : null,
             "type" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "SearchableAlbumSortInput",
+              "name" : "SearchableMarketSortInput",
               "ofType" : null
             },
             "defaultValue" : null
@@ -204,7 +204,7 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "SearchableAlbumConnection",
+            "name" : "SearchableMarketConnection",
             "ofType" : null
           },
           "isDeprecated" : false,
@@ -216,7 +216,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "OBJECT",
-        "name" : "Album",
+        "name" : "Market",
         "description" : null,
         "fields" : [ {
           "name" : "id",
@@ -249,14 +249,14 @@
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "photos",
+          "name" : "products",
           "description" : null,
           "args" : [ {
             "name" : "filter",
             "description" : null,
             "type" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "ModelPhotoFilterInput",
+              "name" : "ModelProductFilterInput",
               "ofType" : null
             },
             "defaultValue" : null
@@ -290,7 +290,7 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "ModelPhotoConnection",
+            "name" : "ModelProductConnection",
             "ofType" : null
           },
           "isDeprecated" : false,
@@ -346,7 +346,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "OBJECT",
-        "name" : "ModelPhotoConnection",
+        "name" : "ModelProductConnection",
         "description" : null,
         "fields" : [ {
           "name" : "items",
@@ -357,7 +357,7 @@
             "name" : null,
             "ofType" : {
               "kind" : "OBJECT",
-              "name" : "Photo",
+              "name" : "Product",
               "ofType" : null
             }
           },
@@ -381,7 +381,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "OBJECT",
-        "name" : "Photo",
+        "name" : "Product",
         "description" : null,
         "fields" : [ {
           "name" : "id",
@@ -414,12 +414,12 @@
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "album",
+          "name" : "market",
           "description" : null,
           "args" : [ ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Album",
+            "name" : "Market",
             "ofType" : null
           },
           "isDeprecated" : false,
@@ -546,7 +546,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "ModelPhotoFilterInput",
+        "name" : "ModelProductFilterInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -602,7 +602,7 @@
             "name" : null,
             "ofType" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "ModelPhotoFilterInput",
+              "name" : "ModelProductFilterInput",
               "ofType" : null
             }
           },
@@ -615,7 +615,7 @@
             "name" : null,
             "ofType" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "ModelPhotoFilterInput",
+              "name" : "ModelProductFilterInput",
               "ofType" : null
             }
           },
@@ -625,7 +625,7 @@
           "description" : null,
           "type" : {
             "kind" : "INPUT_OBJECT",
-            "name" : "ModelPhotoFilterInput",
+            "name" : "ModelProductFilterInput",
             "ofType" : null
           },
           "defaultValue" : null
@@ -963,7 +963,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "OBJECT",
-        "name" : "ModelAlbumConnection",
+        "name" : "ModelMarketConnection",
         "description" : null,
         "fields" : [ {
           "name" : "items",
@@ -974,7 +974,7 @@
             "name" : null,
             "ofType" : {
               "kind" : "OBJECT",
-              "name" : "Album",
+              "name" : "Market",
               "ofType" : null
             }
           },
@@ -998,7 +998,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "ModelAlbumFilterInput",
+        "name" : "ModelMarketFilterInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -1045,7 +1045,7 @@
             "name" : null,
             "ofType" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "ModelAlbumFilterInput",
+              "name" : "ModelMarketFilterInput",
               "ofType" : null
             }
           },
@@ -1058,7 +1058,7 @@
             "name" : null,
             "ofType" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "ModelAlbumFilterInput",
+              "name" : "ModelMarketFilterInput",
               "ofType" : null
             }
           },
@@ -1068,7 +1068,7 @@
           "description" : null,
           "type" : {
             "kind" : "INPUT_OBJECT",
-            "name" : "ModelAlbumFilterInput",
+            "name" : "ModelMarketFilterInput",
             "ofType" : null
           },
           "defaultValue" : null
@@ -1179,17 +1179,6 @@
           },
           "isDeprecated" : false,
           "deprecationReason" : null
-        }, {
-          "name" : "updatedAt",
-          "description" : null,
-          "args" : [ ],
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "String",
-            "ofType" : null
-          },
-          "isDeprecated" : false,
-          "deprecationReason" : null
         } ],
         "inputFields" : null,
         "interfaces" : [ ],
@@ -1259,12 +1248,12 @@
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "photo",
+          "name" : "product",
           "description" : null,
           "args" : [ ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Photo",
+            "name" : "Product",
             "ofType" : null
           },
           "isDeprecated" : false,
@@ -1360,7 +1349,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "OBJECT",
-        "name" : "SearchableAlbumConnection",
+        "name" : "SearchableMarketConnection",
         "description" : null,
         "fields" : [ {
           "name" : "items",
@@ -1371,7 +1360,7 @@
             "name" : null,
             "ofType" : {
               "kind" : "OBJECT",
-              "name" : "Album",
+              "name" : "Market",
               "ofType" : null
             }
           },
@@ -1395,7 +1384,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "SearchableAlbumFilterInput",
+        "name" : "SearchableMarketFilterInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -1442,7 +1431,7 @@
             "name" : null,
             "ofType" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "SearchableAlbumFilterInput",
+              "name" : "SearchableMarketFilterInput",
               "ofType" : null
             }
           },
@@ -1455,7 +1444,7 @@
             "name" : null,
             "ofType" : {
               "kind" : "INPUT_OBJECT",
-              "name" : "SearchableAlbumFilterInput",
+              "name" : "SearchableMarketFilterInput",
               "ofType" : null
             }
           },
@@ -1465,7 +1454,7 @@
           "description" : null,
           "type" : {
             "kind" : "INPUT_OBJECT",
-            "name" : "SearchableAlbumFilterInput",
+            "name" : "SearchableMarketFilterInput",
             "ofType" : null
           },
           "defaultValue" : null
@@ -1655,7 +1644,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "SearchableAlbumSortInput",
+        "name" : "SearchableMarketSortInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -1663,7 +1652,7 @@
           "description" : null,
           "type" : {
             "kind" : "ENUM",
-            "name" : "SearchableAlbumSortableFields",
+            "name" : "SearchableMarketSortableFields",
             "ofType" : null
           },
           "defaultValue" : null
@@ -1682,7 +1671,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "ENUM",
-        "name" : "SearchableAlbumSortableFields",
+        "name" : "SearchableMarketSortableFields",
         "description" : null,
         "fields" : null,
         "inputFields" : null,
@@ -1733,7 +1722,7 @@
         "name" : "Mutation",
         "description" : null,
         "fields" : [ {
-          "name" : "createAlbum",
+          "name" : "createMarket",
           "description" : null,
           "args" : [ {
             "name" : "input",
@@ -1743,7 +1732,7 @@
               "name" : null,
               "ofType" : {
                 "kind" : "INPUT_OBJECT",
-                "name" : "CreateAlbumInput",
+                "name" : "CreateMarketInput",
                 "ofType" : null
               }
             },
@@ -1751,13 +1740,13 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Album",
+            "name" : "Market",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "updateAlbum",
+          "name" : "updateMarket",
           "description" : null,
           "args" : [ {
             "name" : "input",
@@ -1767,7 +1756,7 @@
               "name" : null,
               "ofType" : {
                 "kind" : "INPUT_OBJECT",
-                "name" : "UpdateAlbumInput",
+                "name" : "UpdateMarketInput",
                 "ofType" : null
               }
             },
@@ -1775,13 +1764,13 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Album",
+            "name" : "Market",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "deleteAlbum",
+          "name" : "deleteMarket",
           "description" : null,
           "args" : [ {
             "name" : "input",
@@ -1791,7 +1780,7 @@
               "name" : null,
               "ofType" : {
                 "kind" : "INPUT_OBJECT",
-                "name" : "DeleteAlbumInput",
+                "name" : "DeleteMarketInput",
                 "ofType" : null
               }
             },
@@ -1799,13 +1788,13 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Album",
+            "name" : "Market",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "createPhoto",
+          "name" : "createProduct",
           "description" : null,
           "args" : [ {
             "name" : "input",
@@ -1815,7 +1804,7 @@
               "name" : null,
               "ofType" : {
                 "kind" : "INPUT_OBJECT",
-                "name" : "CreatePhotoInput",
+                "name" : "CreateProductInput",
                 "ofType" : null
               }
             },
@@ -1823,13 +1812,13 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Photo",
+            "name" : "Product",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "updatePhoto",
+          "name" : "updateProduct",
           "description" : null,
           "args" : [ {
             "name" : "input",
@@ -1839,7 +1828,7 @@
               "name" : null,
               "ofType" : {
                 "kind" : "INPUT_OBJECT",
-                "name" : "UpdatePhotoInput",
+                "name" : "UpdateProductInput",
                 "ofType" : null
               }
             },
@@ -1847,13 +1836,13 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Photo",
+            "name" : "Product",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "deletePhoto",
+          "name" : "deleteProduct",
           "description" : null,
           "args" : [ {
             "name" : "input",
@@ -1863,7 +1852,7 @@
               "name" : null,
               "ofType" : {
                 "kind" : "INPUT_OBJECT",
-                "name" : "DeletePhotoInput",
+                "name" : "DeleteProductInput",
                 "ofType" : null
               }
             },
@@ -1871,7 +1860,7 @@
           } ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Photo",
+            "name" : "Product",
             "ofType" : null
           },
           "isDeprecated" : false,
@@ -1979,7 +1968,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "CreateAlbumInput",
+        "name" : "CreateMarketInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -2032,7 +2021,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "UpdateAlbumInput",
+        "name" : "UpdateMarketInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -2081,7 +2070,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "DeleteAlbumInput",
+        "name" : "DeleteMarketInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -2099,7 +2088,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "CreatePhotoInput",
+        "name" : "CreateProductInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -2169,7 +2158,7 @@
           },
           "defaultValue" : null
         }, {
-          "name" : "photoAlbumId",
+          "name" : "productMarketId",
           "description" : null,
           "type" : {
             "kind" : "SCALAR",
@@ -2231,7 +2220,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "UpdatePhotoInput",
+        "name" : "UpdateProductInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -2293,7 +2282,7 @@
           },
           "defaultValue" : null
         }, {
-          "name" : "photoAlbumId",
+          "name" : "productMarketId",
           "description" : null,
           "type" : {
             "kind" : "SCALAR",
@@ -2307,7 +2296,7 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "DeletePhotoInput",
+        "name" : "DeleteProductInput",
         "description" : null,
         "fields" : null,
         "inputFields" : [ {
@@ -2368,15 +2357,6 @@
             "ofType" : null
           },
           "defaultValue" : null
-        }, {
-          "name" : "updatedAt",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "String",
-            "ofType" : null
-          },
-          "defaultValue" : null
         } ],
         "interfaces" : null,
         "enumValues" : null,
@@ -2405,7 +2385,7 @@
           },
           "defaultValue" : null
         }, {
-          "name" : "orderPhotoId",
+          "name" : "orderProductId",
           "description" : null,
           "type" : {
             "kind" : "SCALAR",
@@ -2454,7 +2434,7 @@
           },
           "defaultValue" : null
         }, {
-          "name" : "orderPhotoId",
+          "name" : "orderProductId",
           "description" : null,
           "type" : {
             "kind" : "SCALAR",
@@ -2498,67 +2478,67 @@
         "name" : "Subscription",
         "description" : null,
         "fields" : [ {
-          "name" : "onCreateAlbum",
+          "name" : "onCreateMarket",
           "description" : null,
           "args" : [ ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Album",
+            "name" : "Market",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "onUpdateAlbum",
+          "name" : "onUpdateMarket",
           "description" : null,
           "args" : [ ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Album",
+            "name" : "Market",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "onDeleteAlbum",
+          "name" : "onDeleteMarket",
           "description" : null,
           "args" : [ ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Album",
+            "name" : "Market",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "onCreatePhoto",
+          "name" : "onCreateProduct",
           "description" : null,
           "args" : [ ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Photo",
+            "name" : "Product",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "onUpdatePhoto",
+          "name" : "onUpdateProduct",
           "description" : null,
           "args" : [ ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Photo",
+            "name" : "Product",
             "ofType" : null
           },
           "isDeprecated" : false,
           "deprecationReason" : null
         }, {
-          "name" : "onDeletePhoto",
+          "name" : "onDeleteProduct",
           "description" : null,
           "args" : [ ],
           "type" : {
             "kind" : "OBJECT",
-            "name" : "Photo",
+            "name" : "Product",
             "ofType" : null
           },
           "isDeprecated" : false,
@@ -2599,6 +2579,230 @@
         } ],
         "inputFields" : null,
         "interfaces" : [ ],
+        "enumValues" : null,
+        "possibleTypes" : null
+      }, {
+        "kind" : "INPUT_OBJECT",
+        "name" : "DeleteUserInput",
+        "description" : null,
+        "fields" : null,
+        "inputFields" : [ {
+          "name" : "id",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "ID",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        } ],
+        "interfaces" : null,
+        "enumValues" : null,
+        "possibleTypes" : null
+      }, {
+        "kind" : "INPUT_OBJECT",
+        "name" : "SearchableFloatFilterInput",
+        "description" : null,
+        "fields" : null,
+        "inputFields" : [ {
+          "name" : "ne",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Float",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "gt",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Float",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "lt",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Float",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "gte",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Float",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "lte",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Float",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "eq",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Float",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "range",
+          "description" : null,
+          "type" : {
+            "kind" : "LIST",
+            "name" : null,
+            "ofType" : {
+              "kind" : "SCALAR",
+              "name" : "Float",
+              "ofType" : null
+            }
+          },
+          "defaultValue" : null
+        } ],
+        "interfaces" : null,
+        "enumValues" : null,
+        "possibleTypes" : null
+      }, {
+        "kind" : "INPUT_OBJECT",
+        "name" : "SearchableIntFilterInput",
+        "description" : null,
+        "fields" : null,
+        "inputFields" : [ {
+          "name" : "ne",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Int",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "gt",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Int",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "lt",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Int",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "gte",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Int",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "lte",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Int",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "eq",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Int",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "range",
+          "description" : null,
+          "type" : {
+            "kind" : "LIST",
+            "name" : null,
+            "ofType" : {
+              "kind" : "SCALAR",
+              "name" : "Int",
+              "ofType" : null
+            }
+          },
+          "defaultValue" : null
+        } ],
+        "interfaces" : null,
+        "enumValues" : null,
+        "possibleTypes" : null
+      }, {
+        "kind" : "INPUT_OBJECT",
+        "name" : "SearchableBooleanFilterInput",
+        "description" : null,
+        "fields" : null,
+        "inputFields" : [ {
+          "name" : "eq",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Boolean",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "ne",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Boolean",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        } ],
+        "interfaces" : null,
+        "enumValues" : null,
+        "possibleTypes" : null
+      }, {
+        "kind" : "INPUT_OBJECT",
+        "name" : "ModelBooleanFilterInput",
+        "description" : null,
+        "fields" : null,
+        "inputFields" : [ {
+          "name" : "ne",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Boolean",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        }, {
+          "name" : "eq",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "Boolean",
+            "ofType" : null
+          },
+          "defaultValue" : null
+        } ],
+        "interfaces" : null,
         "enumValues" : null,
         "possibleTypes" : null
       }, {
@@ -2697,185 +2901,6 @@
         "possibleTypes" : null
       }, {
         "kind" : "INPUT_OBJECT",
-        "name" : "SearchableFloatFilterInput",
-        "description" : null,
-        "fields" : null,
-        "inputFields" : [ {
-          "name" : "ne",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Float",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "gt",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Float",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "lt",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Float",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "gte",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Float",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "lte",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Float",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "eq",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Float",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "range",
-          "description" : null,
-          "type" : {
-            "kind" : "LIST",
-            "name" : null,
-            "ofType" : {
-              "kind" : "SCALAR",
-              "name" : "Float",
-              "ofType" : null
-            }
-          },
-          "defaultValue" : null
-        } ],
-        "interfaces" : null,
-        "enumValues" : null,
-        "possibleTypes" : null
-      }, {
-        "kind" : "INPUT_OBJECT",
-        "name" : "ModelBooleanFilterInput",
-        "description" : null,
-        "fields" : null,
-        "inputFields" : [ {
-          "name" : "ne",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Boolean",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "eq",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Boolean",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        } ],
-        "interfaces" : null,
-        "enumValues" : null,
-        "possibleTypes" : null
-      }, {
-        "kind" : "INPUT_OBJECT",
-        "name" : "SearchableIntFilterInput",
-        "description" : null,
-        "fields" : null,
-        "inputFields" : [ {
-          "name" : "ne",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Int",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "gt",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Int",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "lt",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Int",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "gte",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Int",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "lte",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Int",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "eq",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Int",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "range",
-          "description" : null,
-          "type" : {
-            "kind" : "LIST",
-            "name" : null,
-            "ofType" : {
-              "kind" : "SCALAR",
-              "name" : "Int",
-              "ofType" : null
-            }
-          },
-          "defaultValue" : null
-        } ],
-        "interfaces" : null,
-        "enumValues" : null,
-        "possibleTypes" : null
-      }, {
-        "kind" : "INPUT_OBJECT",
         "name" : "UpdateUserInput",
         "description" : null,
         "fields" : null,
@@ -2916,60 +2941,6 @@
           "type" : {
             "kind" : "SCALAR",
             "name" : "String",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "updatedAt",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "String",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        } ],
-        "interfaces" : null,
-        "enumValues" : null,
-        "possibleTypes" : null
-      }, {
-        "kind" : "INPUT_OBJECT",
-        "name" : "DeleteUserInput",
-        "description" : null,
-        "fields" : null,
-        "inputFields" : [ {
-          "name" : "id",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "ID",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        } ],
-        "interfaces" : null,
-        "enumValues" : null,
-        "possibleTypes" : null
-      }, {
-        "kind" : "INPUT_OBJECT",
-        "name" : "SearchableBooleanFilterInput",
-        "description" : null,
-        "fields" : null,
-        "inputFields" : [ {
-          "name" : "eq",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Boolean",
-            "ofType" : null
-          },
-          "defaultValue" : null
-        }, {
-          "name" : "ne",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "Boolean",
             "ofType" : null
           },
           "defaultValue" : null
@@ -3803,23 +3774,6 @@
         "onFragment" : false,
         "onField" : false
       }, {
-        "name" : "deprecated",
-        "description" : null,
-        "locations" : [ "FIELD_DEFINITION", "ENUM_VALUE" ],
-        "args" : [ {
-          "name" : "reason",
-          "description" : null,
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "String",
-            "ofType" : null
-          },
-          "defaultValue" : "\"No longer supported\""
-        } ],
-        "onOperation" : false,
-        "onFragment" : false,
-        "onField" : false
-      }, {
         "name" : "aws_auth",
         "description" : "Directs the schema to enforce authorization on a field",
         "locations" : [ "FIELD_DEFINITION" ],
@@ -3836,6 +3790,23 @@
             }
           },
           "defaultValue" : null
+        } ],
+        "onOperation" : false,
+        "onFragment" : false,
+        "onField" : false
+      }, {
+        "name" : "deprecated",
+        "description" : null,
+        "locations" : [ "FIELD_DEFINITION", "ENUM_VALUE" ],
+        "args" : [ {
+          "name" : "reason",
+          "description" : null,
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "String",
+            "ofType" : null
+          },
+          "defaultValue" : "\"No longer supported\""
         } ],
         "onOperation" : false,
         "onFragment" : false,

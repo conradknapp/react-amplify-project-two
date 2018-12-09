@@ -1,11 +1,11 @@
 // eslint-disable
 // this is an auto generated file. This will be overwritten
 
-export const getAlbum = `query GetAlbum($id: ID!) {
-  getAlbum(id: $id) {
+export const getMarket = `query GetMarket($id: ID!) {
+  getMarket(id: $id) {
     id
     name
-    photos {
+    products {
       items {
         id
         description
@@ -20,16 +20,16 @@ export const getAlbum = `query GetAlbum($id: ID!) {
   }
 }
 `;
-export const listAlbums = `query ListAlbums(
-  $filter: ModelAlbumFilterInput
+export const listMarkets = `query ListMarkets(
+  $filter: ModelMarketFilterInput
   $limit: Int
   $nextToken: String
 ) {
-  listAlbums(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  listMarkets(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
       name
-      photos {
+      products {
         items {
           id
           description
@@ -46,11 +46,11 @@ export const listAlbums = `query ListAlbums(
   }
 }
 `;
-export const getPhoto = `query GetPhoto($id: ID!) {
-  getPhoto(id: $id) {
+export const getProduct = `query GetProduct($id: ID!) {
+  getProduct(id: $id) {
     id
     description
-    album {
+    market {
       id
       name
       owner
@@ -67,16 +67,16 @@ export const getPhoto = `query GetPhoto($id: ID!) {
   }
 }
 `;
-export const listPhotos = `query ListPhotos(
-  $filter: ModelPhotoFilterInput
+export const listProducts = `query ListProducts(
+  $filter: ModelProductFilterInput
   $limit: Int
   $nextToken: String
 ) {
-  listPhotos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  listProducts(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
       description
-      album {
+      market {
         id
         name
         owner
@@ -108,17 +108,16 @@ export const getUser = `query GetUser($id: ID!) {
       nextToken
     }
     createdAt
-    updatedAt
   }
 }
 `;
-export const searchAlbums = `query SearchAlbums(
-  $filter: SearchableAlbumFilterInput
-  $sort: SearchableAlbumSortInput
+export const searchMarkets = `query SearchMarkets(
+  $filter: SearchableMarketFilterInput
+  $sort: SearchableMarketSortInput
   $limit: Int
   $nextToken: Int
 ) {
-  searchAlbums(
+  searchMarkets(
     filter: $filter
     sort: $sort
     limit: $limit
@@ -127,7 +126,7 @@ export const searchAlbums = `query SearchAlbums(
     items {
       id
       name
-      photos {
+      products {
         items {
           id
           description

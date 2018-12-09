@@ -1,11 +1,11 @@
 // eslint-disable
 // this is an auto generated file. This will be overwritten
 
-export const onCreateAlbum = `subscription OnCreateAlbum {
-  onCreateAlbum {
+export const onCreateMarket = `subscription OnCreateMarket {
+  onCreateMarket {
     id
     name
-    photos {
+    products {
       items {
         id
         description
@@ -20,11 +20,11 @@ export const onCreateAlbum = `subscription OnCreateAlbum {
   }
 }
 `;
-export const onUpdateAlbum = `subscription OnUpdateAlbum {
-  onUpdateAlbum {
+export const onUpdateMarket = `subscription OnUpdateMarket {
+  onUpdateMarket {
     id
     name
-    photos {
+    products {
       items {
         id
         description
@@ -39,11 +39,11 @@ export const onUpdateAlbum = `subscription OnUpdateAlbum {
   }
 }
 `;
-export const onDeleteAlbum = `subscription OnDeleteAlbum {
-  onDeleteAlbum {
+export const onDeleteMarket = `subscription OnDeleteMarket {
+  onDeleteMarket {
     id
     name
-    photos {
+    products {
       items {
         id
         description
@@ -58,11 +58,11 @@ export const onDeleteAlbum = `subscription OnDeleteAlbum {
   }
 }
 `;
-export const onCreatePhoto = `subscription OnCreatePhoto {
-  onCreatePhoto {
+export const onCreateProduct = `subscription OnCreateProduct {
+  onCreateProduct {
     id
     description
-    album {
+    market {
       id
       name
       owner
@@ -79,11 +79,11 @@ export const onCreatePhoto = `subscription OnCreatePhoto {
   }
 }
 `;
-export const onUpdatePhoto = `subscription OnUpdatePhoto {
-  onUpdatePhoto {
+export const onUpdateProduct = `subscription OnUpdateProduct {
+  onUpdateProduct {
     id
     description
-    album {
+    market {
       id
       name
       owner
@@ -100,11 +100,11 @@ export const onUpdatePhoto = `subscription OnUpdatePhoto {
   }
 }
 `;
-export const onDeletePhoto = `subscription OnDeletePhoto {
-  onDeletePhoto {
+export const onDeleteProduct = `subscription OnDeleteProduct {
+  onDeleteProduct {
     id
     description
-    album {
+    market {
       id
       name
       owner
@@ -124,7 +124,7 @@ export const onDeletePhoto = `subscription OnDeletePhoto {
 export const onCreateOrder = `subscription OnCreateOrder {
   onCreateOrder {
     id
-    photo {
+    product {
       id
       description
       price
@@ -136,7 +136,6 @@ export const onCreateOrder = `subscription OnCreateOrder {
       username
       registered
       createdAt
-      updatedAt
     }
     createdAt
   }
@@ -145,7 +144,7 @@ export const onCreateOrder = `subscription OnCreateOrder {
 export const onUpdateOrder = `subscription OnUpdateOrder {
   onUpdateOrder {
     id
-    photo {
+    product {
       id
       description
       price
@@ -157,7 +156,6 @@ export const onUpdateOrder = `subscription OnUpdateOrder {
       username
       registered
       createdAt
-      updatedAt
     }
     createdAt
   }
@@ -166,7 +164,7 @@ export const onUpdateOrder = `subscription OnUpdateOrder {
 export const onDeleteOrder = `subscription OnDeleteOrder {
   onDeleteOrder {
     id
-    photo {
+    product {
       id
       description
       price
@@ -178,7 +176,6 @@ export const onDeleteOrder = `subscription OnDeleteOrder {
       username
       registered
       createdAt
-      updatedAt
     }
     createdAt
   }

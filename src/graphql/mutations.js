@@ -1,11 +1,11 @@
 // eslint-disable
 // this is an auto generated file. This will be overwritten
 
-export const createAlbum = `mutation CreateAlbum($input: CreateAlbumInput!) {
-  createAlbum(input: $input) {
+export const createMarket = `mutation CreateMarket($input: CreateMarketInput!) {
+  createMarket(input: $input) {
     id
     name
-    photos {
+    products {
       items {
         id
         description
@@ -20,11 +20,11 @@ export const createAlbum = `mutation CreateAlbum($input: CreateAlbumInput!) {
   }
 }
 `;
-export const updateAlbum = `mutation UpdateAlbum($input: UpdateAlbumInput!) {
-  updateAlbum(input: $input) {
+export const updateMarket = `mutation UpdateMarket($input: UpdateMarketInput!) {
+  updateMarket(input: $input) {
     id
     name
-    photos {
+    products {
       items {
         id
         description
@@ -39,11 +39,11 @@ export const updateAlbum = `mutation UpdateAlbum($input: UpdateAlbumInput!) {
   }
 }
 `;
-export const deleteAlbum = `mutation DeleteAlbum($input: DeleteAlbumInput!) {
-  deleteAlbum(input: $input) {
+export const deleteMarket = `mutation DeleteMarket($input: DeleteMarketInput!) {
+  deleteMarket(input: $input) {
     id
     name
-    photos {
+    products {
       items {
         id
         description
@@ -58,11 +58,11 @@ export const deleteAlbum = `mutation DeleteAlbum($input: DeleteAlbumInput!) {
   }
 }
 `;
-export const createPhoto = `mutation CreatePhoto($input: CreatePhotoInput!) {
-  createPhoto(input: $input) {
+export const createProduct = `mutation CreateProduct($input: CreateProductInput!) {
+  createProduct(input: $input) {
     id
     description
-    album {
+    market {
       id
       name
       owner
@@ -79,11 +79,11 @@ export const createPhoto = `mutation CreatePhoto($input: CreatePhotoInput!) {
   }
 }
 `;
-export const updatePhoto = `mutation UpdatePhoto($input: UpdatePhotoInput!) {
-  updatePhoto(input: $input) {
+export const updateProduct = `mutation UpdateProduct($input: UpdateProductInput!) {
+  updateProduct(input: $input) {
     id
     description
-    album {
+    market {
       id
       name
       owner
@@ -100,11 +100,11 @@ export const updatePhoto = `mutation UpdatePhoto($input: UpdatePhotoInput!) {
   }
 }
 `;
-export const deletePhoto = `mutation DeletePhoto($input: DeletePhotoInput!) {
-  deletePhoto(input: $input) {
+export const deleteProduct = `mutation DeleteProduct($input: DeleteProductInput!) {
+  deleteProduct(input: $input) {
     id
     description
-    album {
+    market {
       id
       name
       owner
@@ -134,14 +134,13 @@ export const registerUser = `mutation RegisterUser($input: CreateUserInput!) {
       nextToken
     }
     createdAt
-    updatedAt
   }
 }
 `;
 export const createOrder = `mutation CreateOrder($input: CreateOrderInput!) {
   createOrder(input: $input) {
     id
-    photo {
+    product {
       id
       description
       price
@@ -153,7 +152,6 @@ export const createOrder = `mutation CreateOrder($input: CreateOrderInput!) {
       username
       registered
       createdAt
-      updatedAt
     }
     createdAt
   }
@@ -162,7 +160,7 @@ export const createOrder = `mutation CreateOrder($input: CreateOrderInput!) {
 export const updateOrder = `mutation UpdateOrder($input: UpdateOrderInput!) {
   updateOrder(input: $input) {
     id
-    photo {
+    product {
       id
       description
       price
@@ -174,7 +172,6 @@ export const updateOrder = `mutation UpdateOrder($input: UpdateOrderInput!) {
       username
       registered
       createdAt
-      updatedAt
     }
     createdAt
   }
@@ -183,7 +180,7 @@ export const updateOrder = `mutation UpdateOrder($input: UpdateOrderInput!) {
 export const deleteOrder = `mutation DeleteOrder($input: DeleteOrderInput!) {
   deleteOrder(input: $input) {
     id
-    photo {
+    product {
       id
       description
       price
@@ -195,7 +192,6 @@ export const deleteOrder = `mutation DeleteOrder($input: DeleteOrderInput!) {
       username
       registered
       createdAt
-      updatedAt
     }
     createdAt
   }

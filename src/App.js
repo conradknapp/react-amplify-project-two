@@ -11,15 +11,15 @@ import { Router, Switch, Route, Link } from "react-router-dom";
 import createBrowserHistory from "history/createBrowserHistory";
 import StripeCheckout from "react-stripe-checkout";
 import format from "date-fns/format";
-import { listAlbums, searchAlbums } from "./graphql/queries";
+import { listMarkets, searchMarkets } from "./graphql/queries";
 import {
-  createAlbum,
-  createPhoto,
+  createMarket,
+  createProduct,
   registerUser,
-  deletePhoto,
+  deleteProduct,
   createOrder
 } from "./graphql/mutations";
-import { onCreateAlbum, onCreatePhoto } from "./graphql/subscriptions";
+import { onCreateMarket, onCreateProduct } from "./graphql/subscriptions";
 Amplify.configure(aws_exports);
 
 const stripeConfig = {
@@ -42,37 +42,36 @@ const displayErrors = errors => (
   </div>
 );
 
-const AlbumList = ({ searchResults }) => {
-  const onNewAlbum = (prevQuery, newData) => {
+const MarketList = ({ searchResults }) => {
+  const onNewMarket = (prevQuery, newData) => {
     let updatedQuery = { ...prevQuery };
-    const updatedAlbumList = [
-      newData.onCreateAlbum,
-      ...prevQuery.listAlbums.items
+    const updatedMarketList = [
+      newData.onCreateMarket,
+      ...prevQuery.listMarkets.items
     ];
-    updatedQuery.listAlbums.items = updatedAlbumList;
+    updatedQuery.listMarkets.items = updatedMarketList;
     return updatedQuery;
   };
 
   return (
     <Connect
-      query={graphqlOperation(listAlbums)}
-      subscription={graphqlOperation(onCreateAlbum)}
-      onSubscriptionMsg={onNewAlbum}
+      query={graphqlOperation(listMarkets)}
+      subscription={graphqlOperation(onCreateMarket)}
+      onSubscriptionMsg={onNewMarket}
     >
       {({ data, loading, errors }) => {
         if (errors.length > 0) return <div>{displayErrors(errors)}</div>;
-        if (loading || !data.listAlbums) return <h3>Loading...</h3>;
-        // console.log(data.listAlbums);
-        const albums =
-          searchResults.length > 0 ? searchResults : data.listAlbums.items;
+        if (loading || !data.listMarkets) return <h3>Loading...</h3>;
+        const markets =
+          searchResults.length > 0 ? searchResults : data.listMarkets.items;
 
         return (
           <>
-            <Header as="h3">Albums</Header>
+            <Header as="h3">Markets</Header>
             <List divided relaxed>
-              {albums.map(album => (
-                <List.Item key={album.id}>
-                  <Link to={`/albums/${album.id}`}>{album.name}</Link>
+              {markets.map(market => (
+                <List.Item key={market.id}>
+                  <Link to={`/markets/${market.id}`}>{market.name}</Link>
                 </List.Item>
               ))}
             </List>
@@ -83,9 +82,9 @@ const AlbumList = ({ searchResults }) => {
   );
 };
 
-class NewAlbum extends React.Component {
+class NewMarket extends React.Component {
   state = {
-    albumName: ""
+    marketName: ""
   };
 
   handleChange = event => {
@@ -95,17 +94,17 @@ class NewAlbum extends React.Component {
   handleSubmit = async (event, user) => {
     event.preventDefault();
     const input = {
-      name: this.state.albumName,
+      name: this.state.marketName,
       owner: user && user.username
     };
     try {
       const result = await API.graphql(
-        graphqlOperation(createAlbum, { input })
+        graphqlOperation(createMarket, { input })
       );
-      console.info(`Created album: id ${result.data.createAlbum.id}`);
-      this.setState({ albumName: "" });
+      console.info(`Created market: id ${result.data.createMarket.id}`);
+      this.setState({ marketName: "" });
     } catch (err) {
-      console.error("createAlbum mutation failed", err);
+      console.error("createMarket mutation failed", err);
     }
   };
 
@@ -114,29 +113,26 @@ class NewAlbum extends React.Component {
       <UserContext.Consumer>
         {({ user }) => (
           <>
-            <Header as="h3">Add a new album</Header>
-            {/* New Album Field */}
+            <Header as="h1">Add a New Market</Header>
             <Input
               type="text"
-              placeholder="New Album Name"
+              placeholder="Market Name"
               icon="plus"
               iconPosition="left"
-              name="albumName"
-              value={this.state.albumName}
+              name="marketName"
+              value={this.state.marketName}
               onChange={this.handleChange}
               action={{
                 content: "Create",
                 onClick: event => this.handleSubmit(event, user)
               }}
             />
-
-            {/* Search Field */}
             <span>
               <Input
                 type="text"
                 placeholder="Search Markets"
-                name="search"
-                value={this.props.search}
+                name="searchTerm"
+                value={this.props.searchTerm}
                 onChange={this.props.handleSearchChange}
                 action={{ content: "Search", onClick: this.props.handleSearch }}
               />
@@ -149,11 +145,11 @@ class NewAlbum extends React.Component {
   }
 }
 
-const getAlbum = `query GetAlbum($id: ID!) {
-  getAlbum(id: $id) {
+const getMarket = `query GetMarket($id: ID!) {
+  getMarket(id: $id) {
     id
     name
-    photos(sortDirection: DESC, limit: 999) {
+    products(sortDirection: DESC, limit: 999) {
       items {
         id
         description
@@ -174,93 +170,93 @@ const getAlbum = `query GetAlbum($id: ID!) {
 }
 `;
 
-const AlbumDetails = ({ albumId, user }) => (
+const MarketDetails = ({ marketId, user }) => (
   <Connect
-    query={graphqlOperation(getAlbum, { id: albumId })}
-    subscription={graphqlOperation(onCreatePhoto)}
+    query={graphqlOperation(getMarket, { id: marketId })}
+    subscription={graphqlOperation(onCreateProduct)}
     onSubscriptionMsg={(prevQuery, newData) => {
       let updatedQuery = { ...prevQuery };
-      let updatedPhotoList = [
-        newData.onCreatePhoto,
-        ...prevQuery.getAlbum.photos.items
+      let updatedProductList = [
+        newData.onCreateProduct,
+        ...prevQuery.getMarket.products.items
       ];
-      updatedQuery.getAlbum.photos.items = updatedPhotoList;
+      updatedQuery.getMarket.products.items = updatedProductList;
       return updatedQuery;
     }}
   >
-    {({ data: { getAlbum }, loading, errors }) => {
-      if (loading || !getAlbum) return <h3>Loading...</h3>;
+    {({ data: { getMarket }, loading, errors }) => {
+      if (loading || !getMarket) return <h3>Loading...</h3>;
       if (errors.length > 0) return <div>{displayErrors(errors)}</div>;
-      const isAlbumCreator = user && user.username === getAlbum.owner;
+      const isMarketOwner = user && user.username === getMarket.owner;
 
       return (
         <>
-          <Header as="h3">{getAlbum.name}</Header>
-          {isAlbumCreator && <NewPhoto albumId={getAlbum.id} />}
+          <Header as="h1">{getMarket.name}</Header>
+          {isMarketOwner && <NewProduct marketId={getMarket.id} />}
           <Divider hidden />
-          <PhotoList photos={getAlbum.photos.items} />
+          <ProductList products={getMarket.products.items} />
         </>
       );
     }}
   </Connect>
 );
 
-const AlbumPage = ({ match, user }) => (
+const MarketPage = ({ match, user }) => (
   <>
     <Link to="/">Back to Markets list</Link>
-    <AlbumDetails albumId={match.params.albumId} user={user} />
+    <MarketDetails marketId={match.params.marketId} user={user} />
   </>
 );
 
-const PhotoList = ({ photos }) =>
-  photos.map(photo => <Photo key={photo.file.key} photo={photo} />);
+const ProductList = ({ products }) =>
+  products.map(product => <Product key={product.file.key} product={product} />);
 
-// Need to make Photo a class component to add the ability to Update photos
-const Photo = ({ photo }) => {
-  const handleDeletePhoto = async photoId => {
-    const input = { id: photoId };
-    await API.graphql(graphqlOperation(deletePhoto, { input }));
+// Need to make Product a class component to add the ability to Update products
+const Product = ({ product }) => {
+  const handleDeleteProduct = async productId => {
+    const input = { id: productId };
+    await API.graphql(graphqlOperation(deleteProduct, { input }));
   };
 
   return (
     <UserContext.Consumer>
       {({ user }) => {
-        const isPhotoCreator = user && user.username === photo.owner;
+        const isProductOwner = user && user.username === product.owner;
 
         return (
           <>
             <span>
-              {!isPhotoCreator && (
-                <PayButton
-                  photoId={photo.id}
-                  user={user}
-                  price={photo.price}
-                  description={photo.description}
-                />
-              )}
-              {isPhotoCreator && (
+              <h2>{product.description}</h2>
+              <h3>${convertCentsToDollars(product.price)}</h3>
+              {isProductOwner && (
                 <>
                   <Button
                     circular
                     color="orange"
                     icon="pencil"
-                    // onClick={() => handleUpdatePhoto(photo.id)}
+                    // onClick={() => handleUpdateProduct(product.id)}
                   />
                   <Button
                     circular
                     color="red"
                     icon="trash alternate"
-                    onClick={() => handleDeletePhoto(photo.id)}
+                    onClick={() => handleDeleteProduct(product.id)}
                   />
                 </>
               )}
             </span>
             <S3Image
-              imgKey={photo.file.key}
+              imgKey={product.file.key}
               theme={{ photoImg: { width: "300px", height: "auto" } }}
             />
-            <h2>{photo.description}</h2>
-            <h3>${convertCentsToDollars(photo.price)}</h3>
+            {!isProductOwner && (
+              <PayButton
+                productId={product.id}
+                user={user}
+                price={product.price}
+                description={product.description}
+              />
+            )}
           </>
         );
       }}
@@ -268,7 +264,7 @@ const Photo = ({ photo }) => {
   );
 };
 
-const PayButton = ({ price, description, user, photoId }) => {
+const PayButton = ({ price, description, user, productId }) => {
   const handlePurchase = async token => {
     try {
       const result = await API.post("stripelambda", "/charge", {
@@ -287,7 +283,7 @@ const PayButton = ({ price, description, user, photoId }) => {
         // new id of what we want to update and what we want to update the user with
         const input = {
           orderUserId: user && user.attributes.sub,
-          orderPhotoId: photoId
+          orderProductId: productId
         };
         const order = await API.graphql(
           graphqlOperation(createOrder, { input })
@@ -323,7 +319,7 @@ const convertDollarsToCents = price => (price * 100).toFixed(2);
 
 const convertCentsToDollars = price => (price / 100).toFixed(2);
 
-class NewPhoto extends React.Component {
+class NewProduct extends React.Component {
   state = { ...initialState };
 
   handleFileChange = event => {
@@ -353,10 +349,12 @@ class NewPhoto extends React.Component {
     const input = {
       price: convertDollarsToCents(this.state.price),
       description: this.state.description,
-      photoAlbumId: this.props.albumId,
+      productMarketId: this.props.marketId,
       file
     };
-    const result = await API.graphql(graphqlOperation(createPhoto, { input }));
+    const result = await API.graphql(
+      graphqlOperation(createProduct, { input })
+    );
     console.log("Uploaded file", result);
     this.setState({ ...initialState });
     this.fileInput.value = null;
@@ -409,7 +407,7 @@ const getUser = `query GetUser($id: ID!) {
       items {
         id
         createdAt
-        photo {
+        product {
           createdAt
           description
           id
@@ -538,9 +536,9 @@ class ProfilePage extends React.Component {
                   <li key={order.id}>
                     <p>Order Id: {order.id}</p>
 
-                    <p>Desc: {order.photo.description}</p>
-                    <p>Price: ${convertCentsToDollars(order.photo.price)}</p>
-                    <p>Owner: {order.photo.owner}</p>
+                    <p>Desc: {order.product.description}</p>
+                    <p>Price: ${convertCentsToDollars(order.product.price)}</p>
+                    <p>Owner: {order.product.owner}</p>
                     <p>Processed on {formatDate(order.createdAt)}</p>
                   </li>
                 ))}
@@ -556,7 +554,7 @@ class ProfilePage extends React.Component {
 // Make home a stateful component in order to add search
 class HomePage extends React.Component {
   state = {
-    search: "",
+    searchTerm: "",
     searchResults: []
   };
 
@@ -565,29 +563,27 @@ class HomePage extends React.Component {
   };
 
   handleClearSearch = () => {
-    this.setState({ search: "", searchResults: [] });
+    this.setState({ searchTerm: "", searchResults: [] });
   };
 
   handleSearch = async event => {
     event.preventDefault();
     const result = await API.graphql(
-      graphqlOperation(searchAlbums, {
+      graphqlOperation(searchMarkets, {
         filter: {
           or: [
             {
               name: {
-                match: this.state.search
+                match: this.state.searchTerm
+                //   regexp: `.*${this.state.searchTerm}.*`
               }
             },
             {
               owner: {
-                match: this.state.search
+                match: this.state.searchTerm
               }
             }
           ]
-          // description: {
-          //   regexp: `.*${this.state.search}.*`
-          // }
         },
         sort: {
           field: "createdAt",
@@ -595,20 +591,19 @@ class HomePage extends React.Component {
         }
       })
     );
-    // console.log(result.data.searchAlbums.items);
-    this.setState({ searchResults: result.data.searchAlbums.items });
+    this.setState({ searchResults: result.data.searchMarkets.items });
   };
 
   render() {
     return (
       <>
-        <NewAlbum
+        <NewMarket
           handleSearchChange={this.handleSearchChange}
           handleSearch={this.handleSearch}
           handleClearSearch={this.handleClearSearch}
-          search={this.state.search}
+          searchTerm={this.state.searchTerm}
         />
-        <AlbumList searchResults={this.state.searchResults} />
+        <MarketList searchResults={this.state.searchResults} />
       </>
     );
   }
@@ -702,8 +697,8 @@ class App extends React.Component {
                 component={() => <ProfilePage user={user} />}
               />
               <Route
-                path="/albums/:albumId"
-                render={({ match }) => <AlbumPage match={match} user={user} />}
+                path="/markets/:marketId"
+                render={({ match }) => <MarketPage match={match} user={user} />}
               />
             </Switch>
           </div>
