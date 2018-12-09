@@ -2,6 +2,7 @@
 
 # aws-amplify
 .amplifyrc
+.graphqlconfig.yml
 amplify
 src/aws-exports.js
 
