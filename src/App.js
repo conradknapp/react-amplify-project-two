@@ -1,7 +1,7 @@
 import React from "react";
 import aws_exports from "./aws-exports";
 // prettier-ignore
-import { withAuthenticator, Authenticator, Connect, S3Image, AmplifyTheme } from "aws-amplify-react";
+import { Authenticator, Connect, S3Image, AmplifyTheme } from "aws-amplify-react";
 // prettier-ignore
 import Amplify, { Auth, API, graphqlOperation, Storage, Hub, Logger
 } from "aws-amplify";
@@ -10,6 +10,7 @@ import { Divider, Form, Header, Input, List, Button, Modal } from "semantic-ui-r
 import { Router, Switch, Route, Link } from "react-router-dom";
 import createBrowserHistory from "history/createBrowserHistory";
 import StripeCheckout from "react-stripe-checkout";
+import format from "date-fns/format";
 import { listAlbums, searchAlbums } from "./graphql/queries";
 import {
   createAlbum,
@@ -29,6 +30,18 @@ const history = createBrowserHistory();
 
 // window.LOG_LEVEL = "DEBUG";
 
+const formatDate = date => format(date, "ddd h:mm A, MMM Do, YYYY");
+
+const displayErrors = errors => (
+  <div>
+    {errors.map((error, i) => (
+      <p style={{ color: "red" }} key={i}>
+        {error.message}
+      </p>
+    ))}
+  </div>
+);
+
 const AlbumList = ({ searchResults }) => {
   const onNewAlbum = (prevQuery, newData) => {
     let updatedQuery = { ...prevQuery };
@@ -47,7 +60,7 @@ const AlbumList = ({ searchResults }) => {
       onSubscriptionMsg={onNewAlbum}
     >
       {({ data, loading, errors }) => {
-        if (errors.length > 0) return <div>{JSON.stringify(errors)}</div>;
+        if (errors.length > 0) return <div>{displayErrors(errors)}</div>;
         if (loading || !data.listAlbums) return <h3>Loading...</h3>;
         // console.log(data.listAlbums);
         const albums =
@@ -121,7 +134,7 @@ class NewAlbum extends React.Component {
             <span>
               <Input
                 type="text"
-                placeholder="Search Albums"
+                placeholder="Search Markets"
                 name="search"
                 value={this.props.search}
                 onChange={this.props.handleSearchChange}
@@ -177,7 +190,7 @@ const AlbumDetails = ({ albumId, user }) => (
   >
     {({ data: { getAlbum }, loading, errors }) => {
       if (loading || !getAlbum) return <h3>Loading...</h3>;
-      if (errors.length > 0) return <div>{JSON.stringify(errors)}</div>;
+      if (errors.length > 0) return <div>{displayErrors(errors)}</div>;
       const isAlbumCreator = user && user.username === getAlbum.owner;
 
       return (
@@ -194,7 +207,7 @@ const AlbumDetails = ({ albumId, user }) => (
 
 const AlbumPage = ({ match, user }) => (
   <>
-    <Link to="/">Back to Albums list</Link>
+    <Link to="/">Back to Markets list</Link>
     <AlbumDetails albumId={match.params.albumId} user={user} />
   </>
 );
@@ -202,6 +215,7 @@ const AlbumPage = ({ match, user }) => (
 const PhotoList = ({ photos }) =>
   photos.map(photo => <Photo key={photo.file.key} photo={photo} />);
 
+// Need to make Photo a class component to add the ability to Update photos
 const Photo = ({ photo }) => {
   const handleDeletePhoto = async photoId => {
     const input = { id: photoId };
@@ -327,7 +341,7 @@ class NewPhoto extends React.Component {
     event.preventDefault();
     this.setState({ isUploading: true });
     const { identityId } = await Auth.currentCredentials();
-    const filename = `${identityId}/${this.state.file.name}-${Date.now()}`;
+    const filename = `${identityId}/${Date.now()}-${this.state.file.name}`;
     const uploadedImage = await Storage.put(filename, this.state.file, {
       contentType: this.state.file.type
     });
@@ -527,7 +541,7 @@ class ProfilePage extends React.Component {
                     <p>Desc: {order.photo.description}</p>
                     <p>Price: ${convertCentsToDollars(order.photo.price)}</p>
                     <p>Owner: {order.photo.owner}</p>
-                    <p>Processed on {order.createdAt}</p>
+                    <p>Processed on {formatDate(order.createdAt)}</p>
                   </li>
                 ))}
               </ul>
@@ -559,10 +573,21 @@ class HomePage extends React.Component {
     const result = await API.graphql(
       graphqlOperation(searchAlbums, {
         filter: {
-          name: {
-            match: this.state.search
-            // regexp: `.*${this.state.search}.*`
-          }
+          or: [
+            {
+              name: {
+                match: this.state.search
+              }
+            },
+            {
+              owner: {
+                match: this.state.search
+              }
+            }
+          ]
+          // description: {
+          //   regexp: `.*${this.state.search}.*`
+          // }
         },
         sort: {
           field: "createdAt",
@@ -626,7 +651,7 @@ class App extends React.Component {
     user ? this.setState({ user }) : this.setState({ user: null });
   };
 
-  getUsername = () => {
+  displayUsername = () => {
     const { user } = this.state;
     const username = `${user.attributes.given_name} ${
       user.attributes.family_name
@@ -666,7 +691,7 @@ class App extends React.Component {
           {/* Replace Div with Container Element */}
           <div style={{ padding: "2em" }}>
             <nav>
-              <span>Hello, {this.getUsername()}</span>
+              <span>Hello, {this.displayUsername()}</span>
               <Link to="/profile">Profile</Link>
               <Button onClick={this.handleSignout}>Signout</Button>
             </nav>
