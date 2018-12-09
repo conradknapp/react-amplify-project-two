@@ -9,8 +9,6 @@ export const createAlbum = `mutation CreateAlbum($input: CreateAlbumInput!) {
       items {
         id
         description
-        bucket
-        key
         price
         owner
         createdAt
@@ -30,8 +28,6 @@ export const updateAlbum = `mutation UpdateAlbum($input: UpdateAlbumInput!) {
       items {
         id
         description
-        bucket
-        key
         price
         owner
         createdAt
@@ -51,8 +47,6 @@ export const deleteAlbum = `mutation DeleteAlbum($input: DeleteAlbumInput!) {
       items {
         id
         description
-        bucket
-        key
         price
         owner
         createdAt
@@ -74,8 +68,11 @@ export const createPhoto = `mutation CreatePhoto($input: CreatePhotoInput!) {
       owner
       createdAt
     }
-    bucket
-    key
+    file {
+      bucket
+      region
+      key
+    }
     price
     owner
     createdAt
@@ -92,8 +89,11 @@ export const updatePhoto = `mutation UpdatePhoto($input: UpdatePhotoInput!) {
       owner
       createdAt
     }
-    bucket
-    key
+    file {
+      bucket
+      region
+      key
+    }
     price
     owner
     createdAt
@@ -110,16 +110,19 @@ export const deletePhoto = `mutation DeletePhoto($input: DeletePhotoInput!) {
       owner
       createdAt
     }
-    bucket
-    key
+    file {
+      bucket
+      region
+      key
+    }
     price
     owner
     createdAt
   }
 }
 `;
-export const createUser = `mutation CreateUser($input: CreateUserInput!) {
-  createUser(input: $input) {
+export const registerUser = `mutation RegisterUser($input: CreateUserInput!) {
+  registerUser(input: $input) {
     id
     username
     registered
@@ -130,36 +133,8 @@ export const createUser = `mutation CreateUser($input: CreateUserInput!) {
       }
       nextToken
     }
-  }
-}
-`;
-export const updateUser = `mutation UpdateUser($input: UpdateUserInput!) {
-  updateUser(input: $input) {
-    id
-    username
-    registered
-    orders {
-      items {
-        id
-        createdAt
-      }
-      nextToken
-    }
-  }
-}
-`;
-export const deleteUser = `mutation DeleteUser($input: DeleteUserInput!) {
-  deleteUser(input: $input) {
-    id
-    username
-    registered
-    orders {
-      items {
-        id
-        createdAt
-      }
-      nextToken
-    }
+    createdAt
+    updatedAt
   }
 }
 `;
@@ -169,8 +144,6 @@ export const createOrder = `mutation CreateOrder($input: CreateOrderInput!) {
     photo {
       id
       description
-      bucket
-      key
       price
       owner
       createdAt
@@ -179,6 +152,8 @@ export const createOrder = `mutation CreateOrder($input: CreateOrderInput!) {
       id
       username
       registered
+      createdAt
+      updatedAt
     }
     createdAt
   }
@@ -190,8 +165,6 @@ export const updateOrder = `mutation UpdateOrder($input: UpdateOrderInput!) {
     photo {
       id
       description
-      bucket
-      key
       price
       owner
       createdAt
@@ -200,6 +173,8 @@ export const updateOrder = `mutation UpdateOrder($input: UpdateOrderInput!) {
       id
       username
       registered
+      createdAt
+      updatedAt
     }
     createdAt
   }
@@ -211,8 +186,6 @@ export const deleteOrder = `mutation DeleteOrder($input: DeleteOrderInput!) {
     photo {
       id
       description
-      bucket
-      key
       price
       owner
       createdAt
@@ -221,6 +194,8 @@ export const deleteOrder = `mutation DeleteOrder($input: DeleteOrderInput!) {
       id
       username
       registered
+      createdAt
+      updatedAt
     }
     createdAt
   }

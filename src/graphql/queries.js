@@ -9,8 +9,6 @@ export const getAlbum = `query GetAlbum($id: ID!) {
       items {
         id
         description
-        bucket
-        key
         price
         owner
         createdAt
@@ -35,8 +33,6 @@ export const listAlbums = `query ListAlbums(
         items {
           id
           description
-          bucket
-          key
           price
           owner
           createdAt
@@ -60,8 +56,11 @@ export const getPhoto = `query GetPhoto($id: ID!) {
       owner
       createdAt
     }
-    bucket
-    key
+    file {
+      bucket
+      region
+      key
+    }
     price
     owner
     createdAt
@@ -83,8 +82,11 @@ export const listPhotos = `query ListPhotos(
         owner
         createdAt
       }
-      bucket
-      key
+      file {
+        bucket
+        region
+        key
+      }
       price
       owner
       createdAt
@@ -105,77 +107,8 @@ export const getUser = `query GetUser($id: ID!) {
       }
       nextToken
     }
-  }
-}
-`;
-export const listUsers = `query ListUsers(
-  $filter: ModelUserFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  listUsers(filter: $filter, limit: $limit, nextToken: $nextToken) {
-    items {
-      id
-      username
-      registered
-      orders {
-        items {
-          id
-          createdAt
-        }
-        nextToken
-      }
-    }
-    nextToken
-  }
-}
-`;
-export const getOrder = `query GetOrder($id: ID!) {
-  getOrder(id: $id) {
-    id
-    photo {
-      id
-      description
-      bucket
-      key
-      price
-      owner
-      createdAt
-    }
-    user {
-      id
-      username
-      registered
-    }
     createdAt
-  }
-}
-`;
-export const listOrders = `query ListOrders(
-  $filter: ModelOrderFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  listOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
-    items {
-      id
-      photo {
-        id
-        description
-        bucket
-        key
-        price
-        owner
-        createdAt
-      }
-      user {
-        id
-        username
-        registered
-      }
-      createdAt
-    }
-    nextToken
+    updatedAt
   }
 }
 `;
@@ -198,8 +131,6 @@ export const searchAlbums = `query SearchAlbums(
         items {
           id
           description
-          bucket
-          key
           price
           owner
           createdAt
