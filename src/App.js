@@ -1,25 +1,22 @@
 import React from "react";
 import aws_exports from "./aws-exports";
 // prettier-ignore
-import { Authenticator, Connect, S3Image, AmplifyTheme } from "aws-amplify-react";
+import { Authenticator, Connect, S3Image, PhotoPicker, AmplifyTheme } from "aws-amplify-react";
 // prettier-ignore
 import Amplify, { Auth, API, graphqlOperation, Storage, Hub, Logger
 } from "aws-amplify";
 // prettier-ignore
-import { Divider, Form, Header, Input, List, Button, Modal } from "semantic-ui-react";
-import { Router, Switch, Route, Link } from "react-router-dom";
+import { Router, Route, Link } from "react-router-dom";
 import createBrowserHistory from "history/createBrowserHistory";
 import StripeCheckout from "react-stripe-checkout";
 import format from "date-fns/format";
+// prettier-ignore
+import { Loading, Menu, Dialog, Button, Form, Notification, Input, Popover, Tabs, Table, Icon, Layout, Card } from "element-react";
 import { listMarkets, searchMarkets } from "./graphql/queries";
-import {
-  createMarket,
-  createProduct,
-  registerUser,
-  deleteProduct,
-  createOrder
-} from "./graphql/mutations";
+// prettier-ignore
+import { createMarket, createProduct, registerUser, deleteProduct,createOrder } from "./graphql/mutations";
 import { onCreateMarket, onCreateProduct } from "./graphql/subscriptions";
+import "./App.css";
 Amplify.configure(aws_exports);
 
 const stripeConfig = {
@@ -32,14 +29,14 @@ const history = createBrowserHistory();
 
 const formatDate = date => format(date, "ddd h:mm A, MMM Do, YYYY");
 
-const displayErrors = errors => (
-  <div>
+const Error = errors => (
+  <>
     {errors.map((error, i) => (
       <p style={{ color: "red" }} key={i}>
         {error.message}
       </p>
     ))}
-  </div>
+  </>
 );
 
 const MarketList = ({ searchResults }) => {
@@ -60,21 +57,26 @@ const MarketList = ({ searchResults }) => {
       onSubscriptionMsg={onNewMarket}
     >
       {({ data, loading, errors }) => {
-        if (errors.length > 0) return <div>{displayErrors(errors)}</div>;
-        if (loading || !data.listMarkets) return <h3>Loading...</h3>;
+        if (errors.length > 0) return <Error errors={errors} />;
+        if (loading || !data.listMarkets)
+          return <Loading text="Loading..." fullscreen={true} />;
         const markets =
           searchResults.length > 0 ? searchResults : data.listMarkets.items;
 
         return (
           <>
-            <Header as="h3">Markets</Header>
-            <List divided relaxed>
+            <h2>
+              {searchResults.length > 0
+                ? `${searchResults.length} Results`
+                : "Markets"}
+            </h2>
+            <ul>
               {markets.map(market => (
-                <List.Item key={market.id}>
+                <li key={market.id}>
                   <Link to={`/markets/${market.id}`}>{market.name}</Link>
-                </List.Item>
+                </li>
               ))}
-            </List>
+            </ul>
           </>
         );
       }}
@@ -84,15 +86,13 @@ const MarketList = ({ searchResults }) => {
 
 class NewMarket extends React.Component {
   state = {
+    addDialog: false,
     marketName: ""
   };
 
-  handleChange = event => {
-    this.setState({ [event.target.name]: event.target.value });
-  };
-
-  handleSubmit = async (event, user) => {
+  handleAddMarket = async (event, user) => {
     event.preventDefault();
+    this.setState({ addDialog: false });
     const input = {
       name: this.state.marketName,
       owner: user && user.username
@@ -113,31 +113,86 @@ class NewMarket extends React.Component {
       <UserContext.Consumer>
         {({ user }) => (
           <>
-            <Header as="h1">Add a New Market</Header>
-            <Input
-              type="text"
-              placeholder="Market Name"
-              icon="plus"
-              iconPosition="left"
-              name="marketName"
-              value={this.state.marketName}
-              onChange={this.handleChange}
-              action={{
-                content: "Create",
-                onClick: event => this.handleSubmit(event, user)
+            <header
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
               }}
+            >
+              <h1
+                style={{
+                  display: "flex",
+                  color: "var(--lightSquidInk)",
+                  alignItems: "center"
+                }}
+              >
+                Add a New Market
+                <Button
+                  style={{
+                    paddingLeft: "0.5em",
+                    color: "var(--darkAmazonOrange)"
+                  }}
+                  icon="edit"
+                  size="large"
+                  type="text"
+                  onClick={() => this.setState({ addDialog: true })}
+                />
+              </h1>
+            </header>
+
+            <Dialog
+              title="Add Market"
+              visible={this.state.addDialog}
+              onCancel={() => this.setState({ addDialog: false })}
+            >
+              <Dialog.Body>
+                <Form>
+                  <Form.Item label="Add Market" labelWidth="120">
+                    <Input
+                      placeholder="Market Name"
+                      value={this.state.marketName}
+                      onChange={marketName => this.setState({ marketName })}
+                    />
+                  </Form.Item>
+                </Form>
+              </Dialog.Body>
+
+              <Dialog.Footer>
+                <Button onClick={() => this.setState({ addDialog: false })}>
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={event => this.handleAddMarket(event, user)}
+                >
+                  Add
+                </Button>
+              </Dialog.Footer>
+            </Dialog>
+            <Input
+              placeholder="Search Markets..."
+              value={this.props.searchTerm}
+              onChange={this.props.handleSearchChange}
+              append={
+                <Button
+                  type="primary"
+                  icon="search"
+                  onClick={this.props.handleSearch}
+                >
+                  Search
+                </Button>
+              }
+              prepend={
+                <Button
+                  type="info"
+                  icon="circle-cross"
+                  onClick={this.props.handleClearSearch}
+                >
+                  Clear
+                </Button>
+              }
             />
-            <span>
-              <Input
-                type="text"
-                placeholder="Search Markets"
-                name="searchTerm"
-                value={this.props.searchTerm}
-                onChange={this.props.handleSearchChange}
-                action={{ content: "Search", onClick: this.props.handleSearch }}
-              />
-              <Button content="Clear" onClick={this.props.handleClearSearch} />
-            </span>
           </>
         )}
       </UserContext.Consumer>
@@ -170,7 +225,7 @@ const getMarket = `query GetMarket($id: ID!) {
 }
 `;
 
-const MarketDetails = ({ marketId, user }) => (
+const MarketPage = ({ marketId, user }) => (
   <Connect
     query={graphqlOperation(getMarket, { id: marketId })}
     subscription={graphqlOperation(onCreateProduct)}
@@ -185,84 +240,192 @@ const MarketDetails = ({ marketId, user }) => (
     }}
   >
     {({ data: { getMarket }, loading, errors }) => {
-      if (loading || !getMarket) return <h3>Loading...</h3>;
-      if (errors.length > 0) return <div>{displayErrors(errors)}</div>;
+      if (errors.length > 0) return <Error errors={errors} />;
+      if (loading || !getMarket)
+        return <Loading text="Loading..." fullscreen={true} />;
       const isMarketOwner = user && user.username === getMarket.owner;
 
       return (
         <>
-          <Header as="h1">{getMarket.name}</Header>
-          {isMarketOwner && <NewProduct marketId={getMarket.id} />}
-          <Divider hidden />
-          <ProductList products={getMarket.products.items} />
+          <h1>
+            <i
+              className="el-icon-arrow-left"
+              onClick={() => history.push("/")}
+              style={{
+                cursor: "pointer"
+              }}
+            />
+            {getMarket.name}
+          </h1>
+          <Tabs type="card" value={isMarketOwner ? "1" : "2"}>
+            {isMarketOwner && (
+              <Tabs.Pane
+                label={
+                  <span>
+                    <Icon name="date" style={{ marginRight: "5px" }} />
+                    Add Product
+                  </span>
+                }
+                name="1"
+              >
+                <NewProduct marketId={getMarket.id} />
+              </Tabs.Pane>
+            )}
+            <Tabs.Pane
+              label={
+                <span>
+                  <Icon name="menu" style={{ marginRight: "5px" }} />
+                  Products ({getMarket.products.items.length})
+                </span>
+              }
+              name="2"
+            >
+              <ProductList products={getMarket.products.items} />
+            </Tabs.Pane>
+          </Tabs>
         </>
       );
     }}
   </Connect>
 );
 
-const MarketPage = ({ match, user }) => (
-  <>
-    <Link to="/">Back to Markets list</Link>
-    <MarketDetails marketId={match.params.marketId} user={user} />
-  </>
-);
-
 const ProductList = ({ products }) =>
   products.map(product => <Product key={product.file.key} product={product} />);
 
 // Need to make Product a class component to add the ability to Update products
-const Product = ({ product }) => {
-  const handleDeleteProduct = async productId => {
-    const input = { id: productId };
-    await API.graphql(graphqlOperation(deleteProduct, { input }));
+class Product extends React.Component {
+  state = {
+    updateDialog: false,
+    deleteDialog: false
   };
 
-  return (
-    <UserContext.Consumer>
-      {({ user }) => {
-        const isProductOwner = user && user.username === product.owner;
+  handleDeleteProduct = async productId => {
+    try {
+      this.setState({ deleteDialog: false });
+      const input = { id: productId };
+      await API.graphql(graphqlOperation(deleteProduct, { input }));
+      Notification({
+        title: `Success`,
+        message: `Product successfully deleted!`,
+        type: "success"
+      });
+      setTimeout(() => window.location.reload(), 3000);
+    } catch (err) {
+      console.error(`Failed to delete product with id: ${productId}`, err);
+    }
+  };
 
-        return (
-          <>
-            <span>
-              <h2>{product.description}</h2>
-              <h3>${convertCentsToDollars(product.price)}</h3>
+  render() {
+    const { updateDialog, deleteDialog } = this.state;
+    const { product } = this.props;
+
+    return (
+      <UserContext.Consumer>
+        {({ user }) => {
+          const isProductOwner = user && user.username === product.owner;
+
+          return (
+            <>
+              <Layout.Row>
+                <Layout.Col span={9}>
+                  <Card bodyStyle={{ padding: 0, minWidth: "200px" }}>
+                    <S3Image
+                      imgKey={product.file.key}
+                      theme={{
+                        photoImg: { maxWidth: "100%", maxHeight: "100%" }
+                      }}
+                    />
+                    <div style={{ padding: 8 }}>
+                      <span>{product.description}</span>
+                      <div className="bottom clearfix">
+                        <h3>${convertCentsToDollars(product.price)}</h3>
+                        {!isProductOwner && (
+                          <PayButton
+                            productId={product.id}
+                            user={user}
+                            price={product.price}
+                            description={product.description}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                </Layout.Col>
+              </Layout.Row>
               {isProductOwner && (
                 <>
                   <Button
-                    circular
-                    color="orange"
-                    icon="pencil"
-                    // onClick={() => handleUpdateProduct(product.id)}
+                    type="warning"
+                    icon="edit"
+                    onClick={() => this.setState({ updateDialog: true })}
                   />
-                  <Button
-                    circular
-                    color="red"
-                    icon="trash alternate"
-                    onClick={() => handleDeleteProduct(product.id)}
-                  />
+                  <Popover
+                    placement="top"
+                    width="160"
+                    trigger="click"
+                    visible={deleteDialog}
+                    content={
+                      <>
+                        <p>Do you really want to delete this?</p>
+                        <div style={{ textAlign: "right", margin: 0 }}>
+                          <Button
+                            size="mini"
+                            type="text"
+                            onClick={() =>
+                              this.setState({ deleteDialog: false })
+                            }
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="primary"
+                            size="mini"
+                            onClick={() => this.handleDeleteProduct(product.id)}
+                          >
+                            Confirm
+                          </Button>
+                        </div>
+                      </>
+                    }
+                  >
+                    <Button
+                      type="danger"
+                      icon="delete"
+                      onClick={() => this.setState({ deleteDialog: true })}
+                    />
+                  </Popover>
+                  <Dialog
+                    title="Update Product"
+                    size="tiny"
+                    visible={updateDialog}
+                    onCancel={() => this.setState({ updateDialog: false })}
+                  >
+                    <Dialog.Body>
+                      Do you want to update this product?
+                    </Dialog.Body>
+                    <Dialog.Footer>
+                      <Button
+                        onClick={() => this.setState({ updateDialog: false })}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="primary"
+                        onClick={() => this.handleUpdateProduct(product.id)}
+                      >
+                        Confirm
+                      </Button>
+                    </Dialog.Footer>
+                  </Dialog>
                 </>
               )}
-            </span>
-            <S3Image
-              imgKey={product.file.key}
-              theme={{ photoImg: { width: "300px", height: "auto" } }}
-            />
-            {!isProductOwner && (
-              <PayButton
-                productId={product.id}
-                user={user}
-                price={product.price}
-                description={product.description}
-              />
-            )}
-          </>
-        );
-      }}
-    </UserContext.Consumer>
-  );
-};
+            </>
+          );
+        }}
+      </UserContext.Consumer>
+    );
+  }
+}
 
 const PayButton = ({ price, description, user, productId }) => {
   const handlePurchase = async token => {
@@ -278,9 +441,7 @@ const PayButton = ({ price, description, user, productId }) => {
         }
       });
       if (result.charge.status === "succeeded") {
-        // show toast message and redirect back home
         console.log(result.message);
-        // new id of what we want to update and what we want to update the user with
         const input = {
           orderUserId: user && user.attributes.sub,
           orderProductId: productId
@@ -309,8 +470,9 @@ const PayButton = ({ price, description, user, productId }) => {
 };
 
 const initialState = {
-  file: null,
   description: "",
+  image: "",
+  imagePreview: "",
   price: "",
   isUploading: false
 };
@@ -322,24 +484,16 @@ const convertCentsToDollars = price => (price / 100).toFixed(2);
 class NewProduct extends React.Component {
   state = { ...initialState };
 
-  handleFileChange = event => {
-    const file = event.target.files[0];
-    if (file) {
-      this.setState({ file });
-    }
-  };
-
-  handleInputChange = event => {
-    this.setState({ [event.target.name]: event.target.value });
-  };
-
   handleSubmit = async event => {
     event.preventDefault();
     this.setState({ isUploading: true });
+    const visibility = "public";
     const { identityId } = await Auth.currentCredentials();
-    const filename = `${identityId}/${Date.now()}-${this.state.file.name}`;
-    const uploadedImage = await Storage.put(filename, this.state.file, {
-      contentType: this.state.file.type
+    const filename = `/${visibility}/${identityId}/${Date.now()}-${
+      this.state.image.name
+    }`;
+    const uploadedImage = await Storage.put(filename, this.state.image.file, {
+      contentType: this.state.image.type
     });
     const file = {
       key: uploadedImage.key,
@@ -356,40 +510,85 @@ class NewProduct extends React.Component {
       graphqlOperation(createProduct, { input })
     );
     console.log("Uploaded file", result);
+    Notification({
+      title: `Success`,
+      message: `Product successfully created!`,
+      type: "success"
+    });
     this.setState({ ...initialState });
-    this.fileInput.value = null;
   };
 
   render() {
-    const { file, description, price, isUploading } = this.state;
+    const { image, imagePreview, description, price, isUploading } = this.state;
 
     return (
       <>
-        <Form.Button
-          onClick={this.handleSubmit}
-          disabled={!file || !description || !price || isUploading}
-          icon="file image outline"
-          content={isUploading ? "Uploading..." : "Add Image"}
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={this.handleFileChange}
-          ref={ref => (this.fileInput = ref)}
-        />
-        <Input
-          type="text"
-          placeholder="Add Description"
-          name="description"
-          value={description}
-          onChange={this.handleInputChange}
-        />
-        <Input
-          type="number"
-          placeholder="Add Price"
-          name="price"
-          value={price}
-          onChange={this.handleInputChange}
+        <h2>Add New Product</h2>
+        <Form
+          inline={true}
+          onSubmit={this.handleSubmit}
+          style={{
+            margin: 0
+          }}
+        >
+          <Form.Item>
+            <Input
+              type="text"
+              placeholder="Add Description"
+              value={description}
+              onChange={description => this.setState({ description })}
+            />
+          </Form.Item>
+          <Form.Item>
+            <Input
+              type="number"
+              placeholder="Add Price"
+              value={price}
+              onChange={price => this.setState({ price })}
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              onClick={this.handleSubmit}
+              disabled={!image || !description || !price || isUploading}
+              loading={isUploading}
+              type="primary"
+            >
+              {isUploading ? "Uploading..." : "Add Product"}
+            </Button>
+          </Form.Item>
+        </Form>
+        {imagePreview && (
+          <img
+            src={imagePreview}
+            alt="Product Preview"
+            style={{
+              height: "100px",
+              width: "100px",
+              objectFit: "cover",
+              borderRadius: "50%"
+            }}
+          />
+        )}
+        <PhotoPicker
+          title="Product Photo"
+          preview="hidden"
+          onLoad={url => this.setState({ imagePreview: url })}
+          onPick={file => this.setState({ image: file })}
+          theme={{
+            formContainer: {
+              margin: 0,
+              padding: "1em",
+              maxHeight: "300px"
+            },
+            sectionHeader: {
+              padding: "0.2em",
+              color: "var(--darkAmazonOrange)"
+            },
+            photoPickerButton: {
+              background: "var(--squidInk)"
+            }
+          }}
         />
       </>
     );
@@ -423,126 +622,267 @@ const getUser = `query GetUser($id: ID!) {
 
 class ProfilePage extends React.Component {
   state = {
+    user: "",
     given_name: "",
     family_name: "",
-    orders: []
+    orders: [],
+    dialog: false,
+    emailDialog: false,
+    deleteDialog: false,
+    columns: [
+      {
+        label: "Summary",
+        prop: "name",
+        width: 150
+      },
+      {
+        prop: "value",
+        width: 350
+      },
+      {
+        prop: "address",
+        render: row => {
+          switch (row.name) {
+            case "Display Name":
+              return (
+                <Button
+                  onClick={() => this.setState({ dialog: true })}
+                  type="info"
+                  size="small"
+                >
+                  Edit
+                </Button>
+              );
+            case "Email":
+              return (
+                <Button
+                  onClick={() => this.setState({ emailDialog: true })}
+                  type="info"
+                  size="small"
+                >
+                  Edit
+                </Button>
+              );
+            case "Delete Account":
+              return (
+                <Button
+                  onClick={() => this.setState({ deleteDialog: true })}
+                  type="danger"
+                  size="small"
+                >
+                  Delete
+                </Button>
+              );
+            default:
+              return;
+          }
+        }
+      }
+    ]
   };
 
   async componentDidMount() {
     if (this.props.user) {
       try {
         const userAttributes = await Auth.userAttributes(this.props.user);
-        this.translateAttributes(userAttributes);
-        this.getOrders(userAttributes);
+        const attributesObj = Auth.attributesToObject(userAttributes);
+        this.setState({ ...attributesObj });
+        this.getOrders(attributesObj);
+        this.setState({ user: this.props.user });
       } catch (err) {
         console.error(err);
       }
     }
   }
 
-  translateAttributes = userAttributes => {
-    const result = userAttributes.reduce((acc, attr) => {
-      if (attr.Name === "given_name" || attr.Name === "family_name") {
-        acc[attr.Name] = attr.Value;
-      }
-      return acc;
-    }, {});
-    this.setState({ ...result });
-  };
-
-  handleInputChange = event => {
-    this.setState({ [event.target.name]: event.target.value });
-  };
-
   handleSaveProfile = async () => {
     try {
+      this.setState({ dialog: false, emailDialog: false });
       const updatedUser = {
         given_name: this.state.given_name,
-        family_name: this.state.family_name
+        family_name: this.state.family_name,
+        email: this.state.email
       };
       const result = await Auth.updateUserAttributes(
         this.props.user,
         updatedUser
       );
-      console.log(result);
-      // if result === SUCCESS, show toast message and reload page
-      window.location.reload();
+      Notification({
+        title: `Success`,
+        message: `Profile successfully updated!`,
+        type: `${result.toLowerCase()}`
+      });
+      setTimeout(() => window.location.reload(), 3000);
     } catch (err) {
       console.error(err);
+      Notification.error({
+        title: "Error",
+        message: `${err.message || "Error updating profile"}`
+      });
     }
   };
 
-  getOrders = async userAttributes => {
-    const userId = userAttributes.find(el => el["Name"] === "sub").Value;
-    const input = {
-      id: userId
-    };
+  deleteUser = () => {
+    const { user } = this.state;
+    user.deleteUser();
+  };
+
+  getOrders = async ({ sub }) => {
+    const input = { id: sub };
     const result = await API.graphql(graphqlOperation(getUser, input));
     this.setState({ orders: result.data.getUser.orders.items });
   };
 
   render() {
-    const { given_name, family_name, orders } = this.state;
+    const {
+      columns,
+      given_name,
+      family_name,
+      email,
+      orders,
+      dialog,
+      emailDialog,
+      deleteDialog
+    } = this.state;
 
     return (
       <UserContext.Consumer>
         {({ user }) =>
           user && (
             <>
-              <Link to="/">Back Home</Link>
-              <h2>User Info</h2>
-              <p>User id: {user.attributes.sub}</p>
-              <p>Username: {user.username}</p>
-              {(given_name || family_name) && (
-                <span>
-                  Display Name: {given_name} {family_name}
-                </span>
-              )}
-              <Modal
-                trigger={<Button>Edit Display Name</Button>}
-                header="Profile"
-                content={
-                  <>
-                    <Form.Input
-                      type="text"
-                      name="given_name"
-                      placeholder="Given Name"
-                      onChange={this.handleInputChange}
-                      value={given_name}
-                    />
-                    <Form.Input
-                      type="text"
-                      name="family_name"
-                      placeholder="Family Name"
-                      onChange={this.handleInputChange}
-                      value={family_name}
-                    />
-                  </>
-                }
-                actions={[
-                  "Cancel",
-                  {
-                    key: "save",
-                    content: "Save",
-                    positive: true,
-                    onClick: this.handleSaveProfile
-                  }
-                ]}
-              />
-              <p>Email: {user.attributes.email}</p>
-              <h2>Orders</h2>
-              <ul>
-                {orders.map(order => (
-                  <li key={order.id}>
-                    <p>Order Id: {order.id}</p>
+              <Tabs activeName="1" className="profile-tabs">
+                <Tabs.Pane label="Summary" name="1">
+                  <h2>Profile Summary</h2>
+                  <Table
+                    columns={columns}
+                    data={[
+                      {
+                        name: "Your Id",
+                        value: user.attributes.sub
+                      },
+                      {
+                        name: "Username",
+                        value: user.username
+                      },
+                      {
+                        name: "Email",
+                        value: user.attributes.email
+                      },
+                      {
+                        name: "Display Name",
+                        value: `${given_name} ${family_name}`
+                      },
+                      {
+                        name: "Delete Account"
+                      }
+                    ]}
+                    highlightCurrentRow={true}
+                    showHeader={false}
+                    rowClassName={row =>
+                      row.name === "Delete Account" && "danger-row"
+                    }
+                  />
+                </Tabs.Pane>
+                <Tabs.Pane label="Orders" name="2">
+                  <h2>Order History</h2>
+                  <ul>
+                    {orders.map(order => (
+                      <li key={order.id}>
+                        <p>Order Id: {order.id}</p>
 
-                    <p>Desc: {order.product.description}</p>
-                    <p>Price: ${convertCentsToDollars(order.product.price)}</p>
-                    <p>Owner: {order.product.owner}</p>
-                    <p>Processed on {formatDate(order.createdAt)}</p>
-                  </li>
-                ))}
-              </ul>
+                        <p>Desc: {order.product.description}</p>
+                        <p>
+                          Price: ${convertCentsToDollars(order.product.price)}
+                        </p>
+                        <p>Owner: {order.product.owner}</p>
+                        <p>Processed on {formatDate(order.createdAt)}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </Tabs.Pane>
+              </Tabs>
+
+              <Dialog
+                title="Delete Account"
+                size="tiny"
+                visible={deleteDialog}
+                onCancel={() => this.setState({ deleteDialog: false })}
+              >
+                <Dialog.Body>
+                  Do you really want to delete your account?
+                </Dialog.Body>
+                <Dialog.Footer>
+                  <Button
+                    onClick={() => this.setState({ deleteDialog: false })}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="danger"
+                    onClick={() => this.setState({ deleteDialog: false })}
+                  >
+                    Confirm
+                  </Button>
+                </Dialog.Footer>
+              </Dialog>
+
+              <Dialog
+                title="Edit Email"
+                visible={emailDialog}
+                onCancel={() => this.setState({ emailDialog: false })}
+              >
+                <Dialog.Body>
+                  <Form>
+                    <Form.Item label="Email" labelWidth="120">
+                      <Input
+                        onChange={email => this.setState({ email })}
+                        value={email}
+                      />
+                    </Form.Item>
+                  </Form>
+                </Dialog.Body>
+
+                <Dialog.Footer>
+                  <Button onClick={() => this.setState({ emailDialog: false })}>
+                    Cancel
+                  </Button>
+                  <Button type="primary" onClick={this.handleSaveProfile}>
+                    Save
+                  </Button>
+                </Dialog.Footer>
+              </Dialog>
+
+              <Dialog
+                title="Edit Display Name"
+                visible={dialog}
+                onCancel={() => this.setState({ dialog: false })}
+              >
+                <Dialog.Body>
+                  <Form>
+                    <Form.Item label="Given Name" labelWidth="120">
+                      <Input
+                        onChange={given_name => this.setState({ given_name })}
+                        value={given_name}
+                      />
+                    </Form.Item>
+                    <Form.Item label="Family name" labelWidth="120">
+                      <Input
+                        onChange={family_name => this.setState({ family_name })}
+                        value={family_name}
+                      />
+                    </Form.Item>
+                  </Form>
+                </Dialog.Body>
+
+                <Dialog.Footer>
+                  <Button onClick={() => this.setState({ dialog: false })}>
+                    Cancel
+                  </Button>
+                  <Button type="primary" onClick={this.handleSaveProfile}>
+                    Save
+                  </Button>
+                </Dialog.Footer>
+              </Dialog>
             </>
           )
         }
@@ -558,9 +898,7 @@ class HomePage extends React.Component {
     searchResults: []
   };
 
-  handleSearchChange = event => {
-    this.setState({ [event.target.name]: event.target.value });
-  };
+  handleSearchChange = searchTerm => this.setState({ searchTerm });
 
   handleClearSearch = () => {
     this.setState({ searchTerm: "", searchResults: [] });
@@ -608,6 +946,69 @@ class HomePage extends React.Component {
     );
   }
 }
+
+const linkStyles = {
+  textDecoration: "none",
+  margin: 0
+};
+
+const Navbar = ({ displayUsername, handleSignout }) => (
+  <Menu mode="horizontal" theme="dark" defaultActive="1">
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between"
+      }}
+    >
+      {/* App Title */}
+      <Menu.Item index="1">
+        <Link to="/" style={linkStyles}>
+          <span
+            style={{
+              fontWeight: "300",
+              fontSize: "1.3rem",
+              color: "#f90"
+            }}
+          >
+            <img
+              src="https://icon.now.sh/amazon/f90"
+              style={{
+                height: "20px",
+                paddingRight: "5px"
+              }}
+              alt="Amazon Logo"
+            />
+            AmplifyAgora
+          </span>
+        </Link>
+      </Menu.Item>
+
+      {/* Navbar Items */}
+      <div>
+        <Menu.Item index="2">
+          <span
+            style={{
+              fontWeight: "300"
+            }}
+          >
+            Hello, {displayUsername()}
+          </span>
+        </Menu.Item>
+        <Menu.Item index="3">
+          <Link to="/profile" style={linkStyles}>
+            <Icon name="setting" />
+            Profile
+          </Link>
+        </Menu.Item>
+        <Menu.Item index="4">
+          <Button type="warning" onClick={handleSignout}>
+            Signout
+          </Button>
+        </Menu.Item>
+      </div>
+    </div>
+  </Menu>
+);
 
 const logger = new Logger("authLogger");
 
@@ -683,14 +1084,12 @@ class App extends React.Component {
     ) : (
       <UserContext.Provider value={{ user }}>
         <Router history={history}>
-          {/* Replace Div with Container Element */}
-          <div style={{ padding: "2em" }}>
-            <nav>
-              <span>Hello, {this.displayUsername()}</span>
-              <Link to="/profile">Profile</Link>
-              <Button onClick={this.handleSignout}>Signout</Button>
-            </nav>
-            <Switch>
+          <>
+            <Navbar
+              displayUsername={this.displayUsername}
+              handleSignout={this.handleSignout}
+            />
+            <div style={{ padding: "1em" }}>
               <Route path="/" exact component={HomePage} />
               <Route
                 path="/profile"
@@ -698,10 +1097,12 @@ class App extends React.Component {
               />
               <Route
                 path="/markets/:marketId"
-                render={({ match }) => <MarketPage match={match} user={user} />}
+                render={({ match }) => (
+                  <MarketPage marketId={match.params.marketId} user={user} />
+                )}
               />
-            </Switch>
-          </div>
+            </div>
+          </>
         </Router>
       </UserContext.Provider>
     );
@@ -710,18 +1111,17 @@ class App extends React.Component {
 
 const myTheme = {
   ...AmplifyTheme,
-  navBar: {
-    ...AmplifyTheme.navBar,
-    backgroundColor: "#FFC0CB"
-  },
+  // navBar: {
+  //   ...AmplifyTheme.navBar,
+  //   backgroundColor: "#FFC0CB"
+  // },
   sectionHeader: {
     ...AmplifyTheme.sectionHeader,
-    backgroundColor: "#F60"
+    backgroundColor: "var(--squidInk)"
   }
 };
 
 export default App;
 // export default withAuthenticator(App, true, [], null, myTheme);
 
-// User 1: Mww86379@ebbob.com
-// User 2: Mec81194@ebbob.com
+// User: Mec81194@ebbob.com
