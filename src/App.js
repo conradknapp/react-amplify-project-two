@@ -1,22 +1,22 @@
 import React from "react";
-import aws_exports from "./aws-exports";
 // prettier-ignore
 import { Authenticator, Connect, S3Image, PhotoPicker, AmplifyTheme } from "aws-amplify-react";
 // prettier-ignore
 import Amplify, { Auth, API, graphqlOperation, Storage, Hub, Logger
 } from "aws-amplify";
 // prettier-ignore
-import { Router, Route, Link } from "react-router-dom";
+import { Router, Route, Link, NavLink } from "react-router-dom";
 import createBrowserHistory from "history/createBrowserHistory";
 import StripeCheckout from "react-stripe-checkout";
 import format from "date-fns/format";
 // prettier-ignore
-import { Loading, Menu, Dialog, Button, Form, Notification, Input, Popover, Tabs, Table, Icon, Layout, Card } from "element-react";
+import { Loading, Menu as Nav, Dialog, Button, Form, Notification, Input, Popover, Tabs, Table, Icon, Layout, Card, Tag } from "element-react";
 import { listMarkets, searchMarkets } from "./graphql/queries";
 // prettier-ignore
 import { createMarket, createProduct, registerUser, deleteProduct,createOrder } from "./graphql/mutations";
 import { onCreateMarket, onCreateProduct } from "./graphql/subscriptions";
 import "./App.css";
+import aws_exports from "./aws-exports";
 Amplify.configure(aws_exports);
 
 const stripeConfig = {
@@ -73,7 +73,9 @@ const MarketList = ({ searchResults }) => {
             <ul>
               {markets.map(market => (
                 <li key={market.id}>
-                  <Link to={`/markets/${market.id}`}>{market.name}</Link>
+                  <Link to={`/markets/${market.id}`}>
+                    {market.name} - {market.owner}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -625,13 +627,13 @@ class ProfilePage extends React.Component {
     user: "",
     given_name: "",
     family_name: "",
+    verificationCode: "",
     orders: [],
-    dialog: false,
     emailDialog: false,
     deleteDialog: false,
+    verificationForm: false,
     columns: [
       {
-        label: "Summary",
         prop: "name",
         width: 150
       },
@@ -640,19 +642,13 @@ class ProfilePage extends React.Component {
         width: 350
       },
       {
-        prop: "address",
+        prop: "tag",
+        width: 100
+      },
+      {
+        prop: "operations",
         render: row => {
           switch (row.name) {
-            case "Display Name":
-              return (
-                <Button
-                  onClick={() => this.setState({ dialog: true })}
-                  type="info"
-                  size="small"
-                >
-                  Edit
-                </Button>
-              );
             case "Email":
               return (
                 <Button
@@ -688,7 +684,6 @@ class ProfilePage extends React.Component {
         const attributesObj = Auth.attributesToObject(userAttributes);
         this.setState({ ...attributesObj });
         this.getOrders(attributesObj);
-        this.setState({ user: this.props.user });
       } catch (err) {
         console.error(err);
       }
@@ -697,16 +692,38 @@ class ProfilePage extends React.Component {
 
   handleSaveProfile = async () => {
     try {
-      this.setState({ dialog: false, emailDialog: false });
+      this.setState({ deleteDialog: false });
       const updatedUser = {
-        given_name: this.state.given_name,
-        family_name: this.state.family_name,
         email: this.state.email
       };
       const result = await Auth.updateUserAttributes(
         this.props.user,
         updatedUser
       );
+      if (result === "SUCCESS") {
+        this.verifyEmail("email");
+      }
+    } catch (err) {
+      Notification.error({
+        title: "Error",
+        message: `${err.message || "Error updating profile"}`
+      });
+    }
+  };
+
+  verifyEmail = async attr => {
+    await Auth.verifyCurrentUserAttribute(attr);
+    this.setState({ verificationForm: true });
+  };
+
+  handleVerifyEmail = async attr => {
+    const { verificationCode } = this.state;
+    try {
+      const result = await Auth.verifyCurrentUserAttributeSubmit(
+        attr,
+        verificationCode
+      );
+      // console.log({ result });
       Notification({
         title: `Success`,
         message: `Profile successfully updated!`,
@@ -714,7 +731,6 @@ class ProfilePage extends React.Component {
       });
       setTimeout(() => window.location.reload(), 3000);
     } catch (err) {
-      console.error(err);
       Notification.error({
         title: "Error",
         message: `${err.message || "Error updating profile"}`
@@ -734,16 +750,8 @@ class ProfilePage extends React.Component {
   };
 
   render() {
-    const {
-      columns,
-      given_name,
-      family_name,
-      email,
-      orders,
-      dialog,
-      emailDialog,
-      deleteDialog
-    } = this.state;
+    // prettier-ignore
+    const { columns, email, orders, emailDialog, deleteDialog, verificationCode, verificationForm } = this.state;
 
     return (
       <UserContext.Consumer>
@@ -752,7 +760,7 @@ class ProfilePage extends React.Component {
             <>
               <Tabs activeName="1" className="profile-tabs">
                 <Tabs.Pane label="Summary" name="1">
-                  <h2>Profile Summary</h2>
+                  <h2 className="header">Profile Summary</h2>
                   <Table
                     columns={columns}
                     data={[
@@ -766,25 +774,25 @@ class ProfilePage extends React.Component {
                       },
                       {
                         name: "Email",
-                        value: user.attributes.email
-                      },
-                      {
-                        name: "Display Name",
-                        value: `${given_name} ${family_name}`
+                        value: user.attributes.email,
+                        tag: user.attributes.email_verified && (
+                          <Tag type="success">Verified</Tag>
+                        )
                       },
                       {
                         name: "Delete Account"
                       }
                     ]}
+                    style={{ width: "100%" }}
                     highlightCurrentRow={true}
                     showHeader={false}
                     rowClassName={row =>
-                      row.name === "Delete Account" && "danger-row"
+                      row.name === "Delete Account" && "delete-account"
                     }
                   />
                 </Tabs.Pane>
                 <Tabs.Pane label="Orders" name="2">
-                  <h2>Order History</h2>
+                  <h2 className="header">Order History</h2>
                   <ul>
                     {orders.map(order => (
                       <li key={order.id}>
@@ -839,6 +847,16 @@ class ProfilePage extends React.Component {
                         value={email}
                       />
                     </Form.Item>
+                    {verificationForm && (
+                      <Form.Item label="Code" labelWidth="120">
+                        <Input
+                          onChange={verificationCode =>
+                            this.setState({ verificationCode })
+                          }
+                          value={verificationCode}
+                        />
+                      </Form.Item>
+                    )}
                   </Form>
                 </Dialog.Body>
 
@@ -846,41 +864,19 @@ class ProfilePage extends React.Component {
                   <Button onClick={() => this.setState({ emailDialog: false })}>
                     Cancel
                   </Button>
-                  <Button type="primary" onClick={this.handleSaveProfile}>
-                    Save
-                  </Button>
-                </Dialog.Footer>
-              </Dialog>
-
-              <Dialog
-                title="Edit Display Name"
-                visible={dialog}
-                onCancel={() => this.setState({ dialog: false })}
-              >
-                <Dialog.Body>
-                  <Form>
-                    <Form.Item label="Given Name" labelWidth="120">
-                      <Input
-                        onChange={given_name => this.setState({ given_name })}
-                        value={given_name}
-                      />
-                    </Form.Item>
-                    <Form.Item label="Family name" labelWidth="120">
-                      <Input
-                        onChange={family_name => this.setState({ family_name })}
-                        value={family_name}
-                      />
-                    </Form.Item>
-                  </Form>
-                </Dialog.Body>
-
-                <Dialog.Footer>
-                  <Button onClick={() => this.setState({ dialog: false })}>
-                    Cancel
-                  </Button>
-                  <Button type="primary" onClick={this.handleSaveProfile}>
-                    Save
-                  </Button>
+                  {!verificationForm && (
+                    <Button type="primary" onClick={this.handleSaveProfile}>
+                      Save
+                    </Button>
+                  )}
+                  {verificationForm && (
+                    <Button
+                      type="primary"
+                      onClick={() => this.handleVerifyEmail("email")}
+                    >
+                      Submit
+                    </Button>
+                  )}
                 </Dialog.Footer>
               </Dialog>
             </>
@@ -947,67 +943,42 @@ class HomePage extends React.Component {
   }
 }
 
-const linkStyles = {
-  textDecoration: "none",
-  margin: 0
-};
-
-const Navbar = ({ displayUsername, handleSignout }) => (
-  <Menu mode="horizontal" theme="dark" defaultActive="1">
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between"
-      }}
-    >
-      {/* App Title */}
-      <Menu.Item index="1">
-        <Link to="/" style={linkStyles}>
-          <span
-            style={{
-              fontWeight: "300",
-              fontSize: "1.3rem",
-              color: "#f90"
-            }}
-          >
+const Navbar = ({ user, handleSignout }) => (
+  <Nav mode="horizontal" theme="dark" defaultActive="1">
+    <div className="nav-container">
+      {/* App Title / Logo */}
+      <Nav.Item index="1">
+        <NavLink to="/" className="nav-link">
+          <span className="app-title">
             <img
               src="https://icon.now.sh/amazon/f90"
-              style={{
-                height: "20px",
-                paddingRight: "5px"
-              }}
+              className="app-logo"
               alt="Amazon Logo"
             />
             AmplifyAgora
           </span>
-        </Link>
-      </Menu.Item>
+        </NavLink>
+      </Nav.Item>
 
       {/* Navbar Items */}
       <div>
-        <Menu.Item index="2">
-          <span
-            style={{
-              fontWeight: "300"
-            }}
-          >
-            Hello, {displayUsername()}
-          </span>
-        </Menu.Item>
-        <Menu.Item index="3">
-          <Link to="/profile" style={linkStyles}>
+        <Nav.Item index="2">
+          <span className="app-user">Hello, {user.username}</span>
+        </Nav.Item>
+        <Nav.Item index="3">
+          <NavLink to="/profile" className="nav-link">
             <Icon name="setting" />
             Profile
-          </Link>
-        </Menu.Item>
-        <Menu.Item index="4">
+          </NavLink>
+        </Nav.Item>
+        <Nav.Item index="4">
           <Button type="warning" onClick={handleSignout}>
             Signout
           </Button>
-        </Menu.Item>
+        </Nav.Item>
       </div>
     </div>
-  </Menu>
+  </Nav>
 );
 
 const logger = new Logger("authLogger");
@@ -1018,18 +989,23 @@ logger.onHubCapsule = async capsule => {
       id: capsule.payload.data.signInUserSession.idToken.payload.sub
     };
     const { data } = await API.graphql(graphqlOperation(getUser, getUserInput));
-    if (!data.getUser || !data.getUser.registered) {
-      const registerUserInput = {
-        ...getUserInput,
-        username: capsule.payload.data.username,
-        registered: true
-      };
-      const newUser = await API.graphql(
-        graphqlOperation(registerUser, {
-          input: registerUserInput
-        })
-      );
-      console.log({ newUser });
+    // if we can't get a user (meaning the user hasn't been registered before or the user's registered property is not set--undefined), then we call registerUser
+    if (!data.getUser) {
+      try {
+        const registerUserInput = {
+          ...getUserInput,
+          username: capsule.payload.data.username,
+          registered: true
+        };
+        const newUser = await API.graphql(
+          graphqlOperation(registerUser, {
+            input: registerUserInput
+          })
+        );
+        console.log({ newUser });
+      } catch (err) {
+        console.log("ERR!!");
+      }
     }
   }
 };
@@ -1047,15 +1023,9 @@ class App extends React.Component {
     user ? this.setState({ user }) : this.setState({ user: null });
   };
 
-  displayUsername = () => {
-    const { user } = this.state;
-    const username = `${user.attributes.given_name} ${
-      user.attributes.family_name
-    }`;
-    return username || user.email;
-  };
-
   componentDidMount() {
+    /* Log the AmplifyTheme in order to see all the stylable properties */
+    // console.dir(AmplifyTheme);
     this.getAuthUser();
     Hub.listen("auth", this, "onHubCapsule");
   }
@@ -1068,36 +1038,30 @@ class App extends React.Component {
     }
   };
 
-  handleSignout = async () => {
-    try {
-      await Auth.signOut();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  handleSignout = async () => await Auth.signOut();
 
   render() {
     const { user } = this.state;
 
     return !user ? (
-      <Authenticator theme={myTheme} />
+      <Authenticator theme={theme} />
     ) : (
       <UserContext.Provider value={{ user }}>
         <Router history={history}>
           <>
-            <Navbar
-              displayUsername={this.displayUsername}
-              handleSignout={this.handleSignout}
-            />
-            <div style={{ padding: "1em" }}>
-              <Route path="/" exact component={HomePage} />
+            {/* Navigation */}
+            <Navbar user={user} handleSignout={this.handleSignout} />
+
+            {/* Routing */}
+            <div className="app-container">
+              <Route exact path="/" component={HomePage} />
               <Route
                 path="/profile"
                 component={() => <ProfilePage user={user} />}
               />
               <Route
                 path="/markets/:marketId"
-                render={({ match }) => (
+                component={({ match }) => (
                   <MarketPage marketId={match.params.marketId} user={user} />
                 )}
               />
@@ -1109,12 +1073,23 @@ class App extends React.Component {
   }
 }
 
-const myTheme = {
+const theme = {
+  /* Note: Best way to change background is by setting an html rule in App.css */
   ...AmplifyTheme,
+  /* Remove Navbar styling when switching from withAuthenticator to Authenticator (since Authenticator has no Navbar) */
   // navBar: {
   //   ...AmplifyTheme.navBar,
   //   backgroundColor: "#FFC0CB"
   // },
+  button: {
+    ...AmplifyTheme.button,
+    backgroundColor: "var(--amazonOrange)"
+  },
+  // can change the color of the sectionBody, but not of sectionForm currently (may change in the future)
+  sectionBody: {
+    ...AmplifyTheme.sectionBody,
+    padding: "5px"
+  },
   sectionHeader: {
     ...AmplifyTheme.sectionHeader,
     backgroundColor: "var(--squidInk)"
@@ -1125,3 +1100,4 @@ export default App;
 // export default withAuthenticator(App, true, [], null, myTheme);
 
 // User: Mec81194@ebbob.com
+// User 2: Iqa75829@ebbob.com
