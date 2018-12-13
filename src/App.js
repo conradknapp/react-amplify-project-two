@@ -10,7 +10,7 @@ import createBrowserHistory from "history/createBrowserHistory";
 import StripeCheckout from "react-stripe-checkout";
 import format from "date-fns/format";
 // prettier-ignore
-import { Loading, Menu as Nav, Dialog, Button, Form, Notification, Input, Popover, Tabs, Table, Icon, Layout, Card, Tag } from "element-react";
+import { Loading, Menu as Nav, Dialog, Button, Form, Notification, Input, Popover, Tabs, Table, Icon, Layout, Card, Tag, MessageBox, Message } from "element-react";
 import { listMarkets, searchMarkets } from "./graphql/queries";
 // prettier-ignore
 import { createMarket, createProduct, registerUser, deleteProduct,createOrder } from "./graphql/mutations";
@@ -25,18 +25,17 @@ const stripeConfig = {
 };
 const history = createBrowserHistory();
 
-// window.LOG_LEVEL = "DEBUG";
+const formatOrderDate = date => format(date, "ddd h:mm A, MMM Do, YYYY");
 
-const formatDate = date => format(date, "ddd h:mm A, MMM Do, YYYY");
+const formatProductDate = date => format(date, "MMM Do, YYYY");
 
+// prettier-ignore
 const Error = errors => (
-  <>
-    {errors.map((error, i) => (
-      <p style={{ color: "red" }} key={i}>
-        {error.message}
-      </p>
+  <pre>
+    {errors.map(({ message }, i) => (
+      <span style={{ color: "red" }} key={i}>{message}</span>
     ))}
-  </>
+  </pre>
 );
 
 const MarketList = ({ searchResults }) => {
@@ -58,18 +57,20 @@ const MarketList = ({ searchResults }) => {
     >
       {({ data, loading, errors }) => {
         if (errors.length > 0) return <Error errors={errors} />;
-        if (loading || !data.listMarkets)
-          return <Loading text="Loading..." fullscreen={true} />;
+        if (loading || !data.listMarkets) return <Loading fullscreen={true} />;
         const markets =
           searchResults.length > 0 ? searchResults : data.listMarkets.items;
 
         return (
           <>
-            <h2>
-              {searchResults.length > 0
-                ? `${searchResults.length} Results`
-                : "Markets"}
-            </h2>
+            {searchResults.length > 0 ? (
+              <h2 style={{ color: "green" }}>
+                <Icon type="success" name="check" className="icon" />
+                {searchResults.length} Results
+              </h2>
+            ) : (
+              <h2>Markets</h2>
+            )}
             <ul>
               {markets.map(market => (
                 <li key={market.id}>
@@ -88,13 +89,13 @@ const MarketList = ({ searchResults }) => {
 
 class NewMarket extends React.Component {
   state = {
-    addDialog: false,
+    addMarketDialog: false,
     marketName: ""
   };
 
   handleAddMarket = async (event, user) => {
     event.preventDefault();
-    this.setState({ addDialog: false });
+    this.setState({ addMarketDialog: false });
     const input = {
       name: this.state.marketName,
       owner: user && user.username
@@ -115,42 +116,50 @@ class NewMarket extends React.Component {
       <UserContext.Consumer>
         {({ user }) => (
           <>
-            <header
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              <h1
-                style={{
-                  display: "flex",
-                  color: "var(--lightSquidInk)",
-                  alignItems: "center"
-                }}
-              >
+            <div className="market-header">
+              <h1 className="market-title">
                 Add a New Market
                 <Button
-                  style={{
-                    paddingLeft: "0.5em",
-                    color: "var(--darkAmazonOrange)"
-                  }}
+                  className="market-title-button"
                   icon="edit"
                   size="large"
                   type="text"
-                  onClick={() => this.setState({ addDialog: true })}
+                  onClick={() => this.setState({ addMarketDialog: true })}
                 />
               </h1>
-            </header>
+
+              <Form inline={true} onSubmit={this.props.handleSearch}>
+                <Form.Item>
+                  <Input
+                    placeholder="Search Markets..."
+                    value={this.props.searchTerm}
+                    onChange={this.props.handleSearchChange}
+                    icon="circle-cross"
+                    onIconClick={this.props.handleClearSearch}
+                  />
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="info"
+                    icon="search"
+                    loading={this.props.isSearching}
+                    onClick={this.props.handleSearch}
+                  >
+                    Search
+                  </Button>
+                </Form.Item>
+              </Form>
+            </div>
 
             <Dialog
-              title="Add Market"
-              visible={this.state.addDialog}
-              onCancel={() => this.setState({ addDialog: false })}
+              title="Create New Market"
+              visible={this.state.addMarketDialog}
+              onCancel={() => this.setState({ addMarketDialog: false })}
+              size="large"
             >
               <Dialog.Body>
-                <Form>
-                  <Form.Item label="Add Market" labelWidth="120">
+                <Form labelPosition="top">
+                  <Form.Item label="Add Market Name">
                     <Input
                       placeholder="Market Name"
                       value={this.state.marketName}
@@ -161,7 +170,9 @@ class NewMarket extends React.Component {
               </Dialog.Body>
 
               <Dialog.Footer>
-                <Button onClick={() => this.setState({ addDialog: false })}>
+                <Button
+                  onClick={() => this.setState({ addMarketDialog: false })}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -172,29 +183,6 @@ class NewMarket extends React.Component {
                 </Button>
               </Dialog.Footer>
             </Dialog>
-            <Input
-              placeholder="Search Markets..."
-              value={this.props.searchTerm}
-              onChange={this.props.handleSearchChange}
-              append={
-                <Button
-                  type="primary"
-                  icon="search"
-                  onClick={this.props.handleSearch}
-                >
-                  Search
-                </Button>
-              }
-              prepend={
-                <Button
-                  type="info"
-                  icon="circle-cross"
-                  onClick={this.props.handleClearSearch}
-                >
-                  Clear
-                </Button>
-              }
-            />
           </>
         )}
       </UserContext.Consumer>
@@ -243,30 +231,24 @@ const MarketPage = ({ marketId, user }) => (
   >
     {({ data: { getMarket }, loading, errors }) => {
       if (errors.length > 0) return <Error errors={errors} />;
-      if (loading || !getMarket)
-        return <Loading text="Loading..." fullscreen={true} />;
+      if (loading || !getMarket) return <Loading fullscreen={true} />;
       const isMarketOwner = user && user.username === getMarket.owner;
 
       return (
         <>
-          <h1>
-            <i
-              className="el-icon-arrow-left"
-              onClick={() => history.push("/")}
-              style={{
-                cursor: "pointer"
-              }}
-            />
-            {getMarket.name}
-          </h1>
+          <Link to="/">Back to Markets List</Link>
+          <h2 className="header">{getMarket.name}</h2>
+          <span style={{ color: "var(--lightSquidInk)" }}>
+            {getMarket.owner} - {formatProductDate(getMarket.createdAt)}
+          </span>
           <Tabs type="card" value={isMarketOwner ? "1" : "2"}>
             {isMarketOwner && (
               <Tabs.Pane
                 label={
-                  <span>
-                    <Icon name="date" style={{ marginRight: "5px" }} />
+                  <>
+                    <Icon name="plus" className="icon" />
                     Add Product
-                  </span>
+                  </>
                 }
                 name="1"
               >
@@ -275,10 +257,10 @@ const MarketPage = ({ marketId, user }) => (
             )}
             <Tabs.Pane
               label={
-                <span>
-                  <Icon name="menu" style={{ marginRight: "5px" }} />
+                <>
+                  <Icon name="menu" className="icon" />
                   Products ({getMarket.products.items.length})
-                </span>
+                </>
               }
               name="2"
             >
@@ -297,18 +279,18 @@ const ProductList = ({ products }) =>
 // Need to make Product a class component to add the ability to Update products
 class Product extends React.Component {
   state = {
-    updateDialog: false,
-    deleteDialog: false
+    updateProductDialog: false,
+    deleteProductDialog: false
   };
 
   handleDeleteProduct = async productId => {
     try {
-      this.setState({ deleteDialog: false });
+      this.setState({ deleteProductDialog: false });
       const input = { id: productId };
       await API.graphql(graphqlOperation(deleteProduct, { input }));
       Notification({
-        title: `Success`,
-        message: `Product successfully deleted!`,
+        title: "Success",
+        message: "Product successfully deleted!",
         type: "success"
       });
       setTimeout(() => window.location.reload(), 3000);
@@ -318,7 +300,7 @@ class Product extends React.Component {
   };
 
   render() {
-    const { updateDialog, deleteDialog } = this.state;
+    const { updateProductDialog, deleteProductDialog } = this.state;
     const { product } = this.props;
 
     return (
@@ -327,45 +309,41 @@ class Product extends React.Component {
           const isProductOwner = user && user.username === product.owner;
 
           return (
-            <>
-              <Layout.Row>
-                <Layout.Col span={9}>
-                  <Card bodyStyle={{ padding: 0, minWidth: "200px" }}>
-                    <S3Image
-                      imgKey={product.file.key}
-                      theme={{
-                        photoImg: { maxWidth: "100%", maxHeight: "100%" }
-                      }}
-                    />
-                    <div style={{ padding: 8 }}>
-                      <span>{product.description}</span>
-                      <div className="bottom clearfix">
-                        <h3>${convertCentsToDollars(product.price)}</h3>
-                        {!isProductOwner && (
-                          <PayButton
-                            productId={product.id}
-                            user={user}
-                            price={product.price}
-                            description={product.description}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                </Layout.Col>
-              </Layout.Row>
+            <Layout.Col span={8}>
+              <Card bodyStyle={{ padding: 0, minWidth: "200px" }}>
+                <S3Image
+                  imgKey={product.file.key}
+                  theme={{
+                    photoImg: { maxWidth: "100%", maxHeight: "100%" }
+                  }}
+                />
+                <div style={{ padding: 8 }}>
+                  <span>{product.description}</span>
+                  <div className="bottom clearfix">
+                    <h3>${convertCentsToDollars(product.price)}</h3>
+                    {!isProductOwner && (
+                      <PayButton
+                        productId={product.id}
+                        user={user}
+                        price={product.price}
+                        description={product.description}
+                      />
+                    )}
+                  </div>
+                </div>
+              </Card>
               {isProductOwner && (
                 <>
                   <Button
                     type="warning"
                     icon="edit"
-                    onClick={() => this.setState({ updateDialog: true })}
+                    onClick={() => this.setState({ updateProductDialog: true })}
                   />
                   <Popover
                     placement="top"
                     width="160"
                     trigger="click"
-                    visible={deleteDialog}
+                    visible={deleteProductDialog}
                     content={
                       <>
                         <p>Do you really want to delete this?</p>
@@ -374,7 +352,7 @@ class Product extends React.Component {
                             size="mini"
                             type="text"
                             onClick={() =>
-                              this.setState({ deleteDialog: false })
+                              this.setState({ deleteProductDialog: false })
                             }
                           >
                             Cancel
@@ -393,21 +371,27 @@ class Product extends React.Component {
                     <Button
                       type="danger"
                       icon="delete"
-                      onClick={() => this.setState({ deleteDialog: true })}
+                      onClick={() =>
+                        this.setState({ deleteProductDialog: true })
+                      }
                     />
                   </Popover>
                   <Dialog
                     title="Update Product"
                     size="tiny"
-                    visible={updateDialog}
-                    onCancel={() => this.setState({ updateDialog: false })}
+                    visible={updateProductDialog}
+                    onCancel={() =>
+                      this.setState({ updateProductDialog: false })
+                    }
                   >
                     <Dialog.Body>
                       Do you want to update this product?
                     </Dialog.Body>
                     <Dialog.Footer>
                       <Button
-                        onClick={() => this.setState({ updateDialog: false })}
+                        onClick={() =>
+                          this.setState({ updateProductDialog: false })
+                        }
                       >
                         Cancel
                       </Button>
@@ -421,7 +405,7 @@ class Product extends React.Component {
                   </Dialog>
                 </>
               )}
-            </>
+            </Layout.Col>
           );
         }}
       </UserContext.Consumer>
@@ -562,14 +546,9 @@ class NewProduct extends React.Component {
         </Form>
         {imagePreview && (
           <img
+            className="image-preview"
             src={imagePreview}
             alt="Product Preview"
-            style={{
-              height: "100px",
-              width: "100px",
-              objectFit: "cover",
-              borderRadius: "50%"
-            }}
           />
         )}
         <PhotoPicker
@@ -581,6 +560,7 @@ class NewProduct extends React.Component {
             formContainer: {
               margin: 0,
               padding: "1em",
+              // to cut off the button at the bottom before the image preview is shown
               maxHeight: "300px"
             },
             sectionHeader: {
@@ -624,27 +604,15 @@ const getUser = `query GetUser($id: ID!) {
 
 class ProfilePage extends React.Component {
   state = {
-    user: "",
-    given_name: "",
-    family_name: "",
-    verificationCode: "",
-    orders: [],
+    userOrders: [],
+    email: "",
     emailDialog: false,
-    deleteDialog: false,
+    verificationCode: "",
     verificationForm: false,
     columns: [
-      {
-        prop: "name",
-        width: 150
-      },
-      {
-        prop: "value",
-        width: 350
-      },
-      {
-        prop: "tag",
-        width: 100
-      },
+      { prop: "name", width: `150` },
+      { prop: "value", width: `320` },
+      { prop: "tag", width: `100` },
       {
         prop: "operations",
         render: row => {
@@ -659,10 +627,10 @@ class ProfilePage extends React.Component {
                   Edit
                 </Button>
               );
-            case "Delete Account":
+            case "Delete Profile":
               return (
                 <Button
-                  onClick={() => this.setState({ deleteDialog: true })}
+                  onClick={this.handleDeleteProfile}
                   type="danger"
                   size="small"
                 >
@@ -683,75 +651,83 @@ class ProfilePage extends React.Component {
         const userAttributes = await Auth.userAttributes(this.props.user);
         const attributesObj = Auth.attributesToObject(userAttributes);
         this.setState({ ...attributesObj });
-        this.getOrders(attributesObj);
+        this.getUserOrders(attributesObj);
       } catch (err) {
         console.error(err);
       }
     }
   }
 
-  handleSaveProfile = async () => {
+  handleUpdateEmail = async () => {
     try {
-      this.setState({ deleteDialog: false });
-      const updatedUser = {
+      const updatedAttributes = {
         email: this.state.email
       };
       const result = await Auth.updateUserAttributes(
         this.props.user,
-        updatedUser
+        updatedAttributes
       );
       if (result === "SUCCESS") {
-        this.verifyEmail("email");
+        this.sendVerificationCode("email");
       }
     } catch (err) {
       Notification.error({
         title: "Error",
-        message: `${err.message || "Error updating profile"}`
+        message: `${err.message || "Error updating email"}`
       });
     }
   };
 
-  verifyEmail = async attr => {
+  handleDeleteProfile = () => {
+    MessageBox.confirm(
+      "This will permanently delete your account. Continue?",
+      "Attention!",
+      {
+        confirmButtonText: "Delete",
+        cancelButtonText: "Cancel",
+        type: "warning"
+      }
+    )
+      .then(async () => await this.props.user.deleteUser())
+      .catch(() => {
+        Message({ type: "info", message: "Delete canceled" });
+      });
+  };
+
+  sendVerificationCode = async attr => {
     await Auth.verifyCurrentUserAttribute(attr);
     this.setState({ verificationForm: true });
   };
 
   handleVerifyEmail = async attr => {
-    const { verificationCode } = this.state;
     try {
       const result = await Auth.verifyCurrentUserAttributeSubmit(
         attr,
-        verificationCode
+        this.state.verificationCode
       );
-      // console.log({ result });
       Notification({
-        title: `Success`,
-        message: `Profile successfully updated!`,
+        title: "Success",
+        message: "Email successfully verified!",
         type: `${result.toLowerCase()}`
       });
       setTimeout(() => window.location.reload(), 3000);
     } catch (err) {
       Notification.error({
         title: "Error",
-        message: `${err.message || "Error updating profile"}`
+        message: `${err.message || "Error updating email"}`
       });
     }
   };
 
-  deleteUser = () => {
-    const { user } = this.state;
-    user.deleteUser();
-  };
-
-  getOrders = async ({ sub }) => {
+  getUserOrders = async ({ sub }) => {
     const input = { id: sub };
     const result = await API.graphql(graphqlOperation(getUser, input));
-    this.setState({ orders: result.data.getUser.orders.items });
+    this.setState({ userOrders: result.data.getUser.orders.items });
   };
 
   render() {
     // prettier-ignore
-    const { columns, email, orders, emailDialog, deleteDialog, verificationCode, verificationForm } = this.state;
+    const { columns, email, emailDialog, verificationCode, verificationForm, userOrders } = this.state;
 
     return (
       <UserContext.Consumer>
@@ -759,7 +735,15 @@ class ProfilePage extends React.Component {
           user && (
             <>
               <Tabs activeName="1" className="profile-tabs">
-                <Tabs.Pane label="Summary" name="1">
+                <Tabs.Pane
+                  label={
+                    <>
+                      <Icon name="document" className="icon" />
+                      Summary
+                    </>
+                  }
+                  name="1"
+                >
                   <h2 className="header">Profile Summary</h2>
                   <Table
                     columns={columns}
@@ -780,21 +764,28 @@ class ProfilePage extends React.Component {
                         )
                       },
                       {
-                        name: "Delete Account"
+                        name: "Delete Profile",
+                        value: <em>Sorry to see you go</em>
                       }
                     ]}
-                    style={{ width: "100%" }}
-                    highlightCurrentRow={true}
                     showHeader={false}
                     rowClassName={row =>
-                      row.name === "Delete Account" && "delete-account"
+                      row.name === "Delete Profile" && "delete-profile"
                     }
                   />
                 </Tabs.Pane>
-                <Tabs.Pane label="Orders" name="2">
+                <Tabs.Pane
+                  label={
+                    <>
+                      <Icon name="message" className="icon" />
+                      Orders
+                    </>
+                  }
+                  name="2"
+                >
                   <h2 className="header">Order History</h2>
                   <ul>
-                    {orders.map(order => (
+                    {userOrders.map(order => (
                       <li key={order.id}>
                         <p>Order Id: {order.id}</p>
 
@@ -803,7 +794,7 @@ class ProfilePage extends React.Component {
                           Price: ${convertCentsToDollars(order.product.price)}
                         </p>
                         <p>Owner: {order.product.owner}</p>
-                        <p>Processed on {formatDate(order.createdAt)}</p>
+                        <p>Processed on {formatOrderDate(order.createdAt)}</p>
                       </li>
                     ))}
                   </ul>
@@ -811,44 +802,21 @@ class ProfilePage extends React.Component {
               </Tabs>
 
               <Dialog
-                title="Delete Account"
-                size="tiny"
-                visible={deleteDialog}
-                onCancel={() => this.setState({ deleteDialog: false })}
-              >
-                <Dialog.Body>
-                  Do you really want to delete your account?
-                </Dialog.Body>
-                <Dialog.Footer>
-                  <Button
-                    onClick={() => this.setState({ deleteDialog: false })}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="danger"
-                    onClick={() => this.setState({ deleteDialog: false })}
-                  >
-                    Confirm
-                  </Button>
-                </Dialog.Footer>
-              </Dialog>
-
-              <Dialog
+                size="large"
                 title="Edit Email"
                 visible={emailDialog}
                 onCancel={() => this.setState({ emailDialog: false })}
               >
                 <Dialog.Body>
-                  <Form>
-                    <Form.Item label="Email" labelWidth="120">
+                  <Form labelPosition="top">
+                    <Form.Item label="Email">
                       <Input
                         onChange={email => this.setState({ email })}
                         value={email}
                       />
                     </Form.Item>
                     {verificationForm && (
-                      <Form.Item label="Code" labelWidth="120">
+                      <Form.Item label="Verification Code" labelWidth="120">
                         <Input
                           onChange={verificationCode =>
                             this.setState({ verificationCode })
@@ -865,7 +833,7 @@ class ProfilePage extends React.Component {
                     Cancel
                   </Button>
                   {!verificationForm && (
-                    <Button type="primary" onClick={this.handleSaveProfile}>
+                    <Button type="primary" onClick={this.handleUpdateEmail}>
                       Save
                     </Button>
                   )}
@@ -891,7 +859,8 @@ class ProfilePage extends React.Component {
 class HomePage extends React.Component {
   state = {
     searchTerm: "",
-    searchResults: []
+    searchResults: [],
+    isSearching: false
   };
 
   handleSearchChange = searchTerm => this.setState({ searchTerm });
@@ -902,6 +871,7 @@ class HomePage extends React.Component {
 
   handleSearch = async event => {
     event.preventDefault();
+    this.setState({ isSearching: true });
     const result = await API.graphql(
       graphqlOperation(searchMarkets, {
         filter: {
@@ -925,7 +895,10 @@ class HomePage extends React.Component {
         }
       })
     );
-    this.setState({ searchResults: result.data.searchMarkets.items });
+    this.setState({
+      searchResults: result.data.searchMarkets.items,
+      isSearching: false
+    });
   };
 
   render() {
@@ -936,6 +909,7 @@ class HomePage extends React.Component {
           handleSearch={this.handleSearch}
           handleClearSearch={this.handleClearSearch}
           searchTerm={this.state.searchTerm}
+          isSearching={this.state.isSearching}
         />
         <MarketList searchResults={this.state.searchResults} />
       </>
@@ -961,7 +935,7 @@ const Navbar = ({ user, handleSignout }) => (
       </Nav.Item>
 
       {/* Navbar Items */}
-      <div>
+      <div className="nav-items">
         <Nav.Item index="2">
           <span className="app-user">Hello, {user.username}</span>
         </Nav.Item>
@@ -989,7 +963,7 @@ logger.onHubCapsule = async capsule => {
       id: capsule.payload.data.signInUserSession.idToken.payload.sub
     };
     const { data } = await API.graphql(graphqlOperation(getUser, getUserInput));
-    // if we can't get a user (meaning the user hasn't been registered before or the user's registered property is not set--undefined), then we call registerUser
+    // if we can't get a user (meaning the user hasn't been registered before), then we call registerUser
     if (!data.getUser) {
       try {
         const registerUserInput = {
