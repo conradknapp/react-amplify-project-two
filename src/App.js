@@ -10,7 +10,7 @@ import createBrowserHistory from "history/createBrowserHistory";
 import StripeCheckout from "react-stripe-checkout";
 import format from "date-fns/format";
 // prettier-ignore
-import { Loading, Menu as Nav, Dialog, Button, Form, Notification, Input, Popover, Tabs, Table, Icon, Layout, Card, Tag, MessageBox, Message } from "element-react";
+import { Loading, Menu as Nav, Dialog, Button, Form, Notification, Input, Popover, Tabs, Table, Icon, Card, Tag, MessageBox, Message } from "element-react";
 import { listMarkets, searchMarkets } from "./graphql/queries";
 // prettier-ignore
 import { createMarket, createProduct, registerUser, deleteProduct,createOrder } from "./graphql/mutations";
@@ -156,6 +156,7 @@ class NewMarket extends React.Component {
               visible={this.state.addMarketDialog}
               onCancel={() => this.setState({ addMarketDialog: false })}
               size="large"
+              customClass="dialog"
             >
               <Dialog.Body>
                 <Form labelPosition="top">
@@ -273,8 +274,13 @@ const MarketPage = ({ marketId, user }) => (
   </Connect>
 );
 
-const ProductList = ({ products }) =>
-  products.map(product => <Product key={product.file.key} product={product} />);
+const ProductList = ({ products }) => (
+  <div className="card-list">
+    {products.map(product => (
+      <Product key={product.file.key} product={product} />
+    ))}
+  </div>
+);
 
 // Need to make Product a class component to add the ability to Update products
 class Product extends React.Component {
@@ -309,7 +315,7 @@ class Product extends React.Component {
           const isProductOwner = user && user.username === product.owner;
 
           return (
-            <Layout.Col span={8}>
+            <div className="card-container">
               <Card bodyStyle={{ padding: 0, minWidth: "200px" }}>
                 <S3Image
                   imgKey={product.file.key}
@@ -317,9 +323,9 @@ class Product extends React.Component {
                     photoImg: { maxWidth: "100%", maxHeight: "100%" }
                   }}
                 />
-                <div style={{ padding: 8 }}>
+                <div className="card-body">
                   <span>{product.description}</span>
-                  <div className="bottom clearfix">
+                  <div>
                     <h3>${convertCentsToDollars(product.price)}</h3>
                     {!isProductOwner && (
                       <PayButton
@@ -332,80 +338,84 @@ class Product extends React.Component {
                   </div>
                 </div>
               </Card>
-              {isProductOwner && (
-                <>
-                  <Button
-                    type="warning"
-                    icon="edit"
-                    onClick={() => this.setState({ updateProductDialog: true })}
-                  />
-                  <Popover
-                    placement="top"
-                    width="160"
-                    trigger="click"
-                    visible={deleteProductDialog}
-                    content={
-                      <>
-                        <p>Do you really want to delete this?</p>
-                        <div style={{ textAlign: "right", margin: 0 }}>
-                          <Button
-                            size="mini"
-                            type="text"
-                            onClick={() =>
-                              this.setState({ deleteProductDialog: false })
-                            }
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            type="primary"
-                            size="mini"
-                            onClick={() => this.handleDeleteProduct(product.id)}
-                          >
-                            Confirm
-                          </Button>
-                        </div>
-                      </>
-                    }
-                  >
+              <div className="text-right">
+                {isProductOwner && (
+                  <>
                     <Button
-                      type="danger"
-                      icon="delete"
+                      type="warning"
+                      icon="edit"
                       onClick={() =>
-                        this.setState({ deleteProductDialog: true })
+                        this.setState({ updateProductDialog: true })
                       }
                     />
-                  </Popover>
-                  <Dialog
-                    title="Update Product"
-                    size="tiny"
-                    visible={updateProductDialog}
-                    onCancel={() =>
+                    <Popover
+                      placement="top"
+                      width="160"
+                      trigger="click"
+                      visible={deleteProductDialog}
+                      content={
+                        <>
+                          <p>Do you want to delete this?</p>
+                          <div className="text-right">
+                            <Button
+                              size="mini"
+                              type="text"
+                              onClick={() =>
+                                this.setState({ deleteProductDialog: false })
+                              }
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="primary"
+                              size="mini"
+                              onClick={() =>
+                                this.handleDeleteProduct(product.id)
+                              }
+                            >
+                              Confirm
+                            </Button>
+                          </div>
+                        </>
+                      }
+                    >
+                      <Button
+                        type="danger"
+                        icon="delete"
+                        onClick={() =>
+                          this.setState({ deleteProductDialog: true })
+                        }
+                      />
+                    </Popover>
+                  </>
+                )}
+              </div>
+
+              <Dialog
+                title="Update Product"
+                size="large"
+                customClass="dialog"
+                visible={updateProductDialog}
+                onCancel={() => this.setState({ updateProductDialog: false })}
+              >
+                <Dialog.Body>Do you want to update this product?</Dialog.Body>
+                <Dialog.Footer>
+                  <Button
+                    onClick={() =>
                       this.setState({ updateProductDialog: false })
                     }
                   >
-                    <Dialog.Body>
-                      Do you want to update this product?
-                    </Dialog.Body>
-                    <Dialog.Footer>
-                      <Button
-                        onClick={() =>
-                          this.setState({ updateProductDialog: false })
-                        }
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="primary"
-                        onClick={() => this.handleUpdateProduct(product.id)}
-                      >
-                        Confirm
-                      </Button>
-                    </Dialog.Footer>
-                  </Dialog>
-                </>
-              )}
-            </Layout.Col>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => this.handleUpdateProduct(product.id)}
+                  >
+                    Confirm
+                  </Button>
+                </Dialog.Footer>
+              </Dialog>
+            </div>
           );
         }}
       </UserContext.Consumer>
@@ -559,7 +569,8 @@ class NewProduct extends React.Component {
           theme={{
             formContainer: {
               margin: 0,
-              padding: "1em",
+              padding: "0.8em",
+              minWidth: "250px",
               // to cut off the button at the bottom before the image preview is shown
               maxHeight: "300px"
             },
@@ -803,6 +814,7 @@ class ProfilePage extends React.Component {
 
               <Dialog
                 size="large"
+                customClass="dialog"
                 title="Edit Email"
                 visible={emailDialog}
                 onCancel={() => this.setState({ emailDialog: false })}
