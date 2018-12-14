@@ -33,7 +33,7 @@ const formatProductDate = date => format(date, "MMM Do, YYYY");
 const Error = errors => (
   <pre>
     {errors.map(({ message }, i) => (
-      <span style={{ color: "red" }} key={i}>{message}</span>
+      <span className="text-red" key={i}>{message}</span>
     ))}
   </pre>
 );
@@ -64,7 +64,7 @@ const MarketList = ({ searchResults }) => {
         return (
           <>
             {searchResults.length > 0 ? (
-              <h2 style={{ color: "green" }}>
+              <h2 className="text-green">
                 <Icon type="success" name="check" className="icon" />
                 {searchResults.length} Results
               </h2>
@@ -73,14 +73,14 @@ const MarketList = ({ searchResults }) => {
                 <img
                   src="https://icon.now.sh/store_mall_directory/527FFF"
                   alt="Store Icon"
-                  style={{ height: "30px", marginRight: "2px" }}
+                  className="large-icon"
                 />
                 Markets
               </h2>
             )}
 
             {markets.map(market => (
-              <div key={market.id} style={{ margin: "1em 0" }}>
+              <div key={market.id} className="m-y">
                 <Card
                   bodyStyle={{
                     padding: "0.7em",
@@ -108,11 +108,7 @@ const MarketList = ({ searchResults }) => {
                   </div>
                   <div>
                     {market.tags.map(tag => (
-                      <Tag
-                        key={tag}
-                        type="danger"
-                        style={{ margin: "0 0.5em" }}
-                      >
+                      <Tag key={tag} type="danger" className="m-x">
                         {tag}
                       </Tag>
                     ))}
@@ -158,7 +154,7 @@ class NewMarket extends React.Component {
     }
   };
 
-  handleSearchTags = query => {
+  handleFilterTags = query => {
     const filteredTags = this.state.tags
       .map(tag => ({ value: tag, label: tag }))
       .filter(tag => tag.label.toLowerCase().includes(query.toLowerCase()));
@@ -166,7 +162,7 @@ class NewMarket extends React.Component {
   };
 
   render() {
-    const { marketName } = this.state;
+    const { marketName, options } = this.state;
 
     return (
       <UserContext.Consumer>
@@ -231,9 +227,9 @@ class NewMarket extends React.Component {
                       placeholder="Market Tags"
                       onChange={selectedTags => this.setState({ selectedTags })}
                       remote={true}
-                      remoteMethod={this.handleSearchTags}
+                      remoteMethod={this.handleFilterTags}
                     >
-                      {this.state.options.map(option => (
+                      {options.map(option => (
                         <Select.Option
                           key={option.value}
                           label={option.label}
@@ -323,10 +319,9 @@ const MarketPage = ({ marketId, user }) => (
               paddingTop: "1em"
             }}
           >
-            <h2 style={{ margin: "0 0.2em 0.2em 0" }}>{getMarket.name}</h2>•{" "}
-            {getMarket.owner}
+            <h2 className="mb-mr">{getMarket.name}</h2>• {getMarket.owner}
           </span>
-          <div style={{ display: "flex", alignItems: "center", margin: 0 }}>
+          <div className="flex-align-center">
             <span
               style={{ color: "var(--lightSquidInk)", paddingBottom: "1em" }}
             >
@@ -415,9 +410,11 @@ class Product extends React.Component {
                   }}
                 />
                 <div className="card-body">
-                  <span>{product.description}</span>
-                  <div>
-                    <span>${convertCentsToDollars(product.price)}</span>
+                  <h3 className="m-0">{product.description}</h3>
+                  <div className="text-right">
+                    <span className="m-x">
+                      ${convertCentsToDollars(product.price)}
+                    </span>
                     {!isProductOwner && (
                       <PayButton
                         productId={product.id}
@@ -429,13 +426,13 @@ class Product extends React.Component {
                   </div>
                 </div>
               </Card>
-              <div style={{ textAlign: "center" }}>
+              <div className="text-center">
                 {isProductOwner && (
                   <>
                     <Button
                       type="warning"
                       icon="edit"
-                      style={{ margin: "7px" }}
+                      className="m-1"
                       onClick={() =>
                         this.setState({ updateProductDialog: true })
                       }
@@ -710,9 +707,9 @@ class ProfilePage extends React.Component {
     verificationCode: "",
     verificationForm: false,
     columns: [
-      { prop: "name", width: `150` },
-      { prop: "value", width: `320` },
-      { prop: "tag", width: `100` },
+      { prop: "name", width: "150" },
+      { prop: "value", width: "320" },
+      { prop: "tag", width: "100" },
       {
         prop: "operations",
         render: row => {
@@ -885,7 +882,7 @@ class ProfilePage extends React.Component {
                 >
                   <h2 className="header">Order History</h2>
                   {userOrders.map(order => (
-                    <div style={{ marginBottom: "0.5em" }}>
+                    <div className="mb-1">
                       <Card key={order.id}>
                         <pre>
                           <p>Order Id: {order.id}</p>
@@ -978,17 +975,10 @@ class HomePage extends React.Component {
       graphqlOperation(searchMarkets, {
         filter: {
           or: [
-            {
-              name: {
-                match: this.state.searchTerm
-                //   regexp: `.*${this.state.searchTerm}.*`
-              }
-            },
-            {
-              owner: {
-                match: this.state.searchTerm
-              }
-            }
+            { name: { match: this.state.searchTerm } },
+            //   regexp: `.*${this.state.searchTerm}.*`
+            { owner: { match: this.state.searchTerm } },
+            { tags: { match: this.state.searchTerm } }
           ]
         },
         sort: {
@@ -1022,13 +1012,13 @@ class HomePage extends React.Component {
 const Navbar = ({ user, handleSignout }) => (
   <Nav mode="horizontal" theme="dark" defaultActive="1">
     <div className="nav-container">
-      {/* App Title / Logo */}
+      {/* App Title / Icon */}
       <Nav.Item index="1">
         <NavLink to="/" className="nav-link">
           <span className="app-title">
             <img
               src="https://icon.now.sh/account_balance/f90"
-              className="app-logo"
+              className="app-icon"
               alt="Amazon Logo"
             />
             AmplifyAgora

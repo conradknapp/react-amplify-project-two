@@ -28,7 +28,37 @@ body {
 }
 
 .card-body {
-  padding: 1em;
+  padding: 0.5em 1em;
+}
+
+.m-0 {
+  margin: 0;
+}
+
+.m-1 {
+  margin: 7px;
+}
+
+.m-x {
+  margin: 0 0.5em;
+}
+
+.m-y {
+  margin: 1em 0;
+}
+
+.mb-1 {
+  margin-bottom: 7px;
+}
+
+.mb-mr {
+  margin: 0 5px 5px 0;
+}
+
+.flex-align-center {
+  display: flex;
+  align-items: center;
+  margin: 0;
 }
 
 .app-title {
@@ -38,7 +68,7 @@ body {
   margin: -3px;
 }
 
-.app-logo {
+.app-icon {
   height: 30px;
   padding-bottom: 5px;
   padding-right: 5px;
@@ -49,9 +79,22 @@ body {
   font-size: 1rem;
 }
 
+.text-center {
+  text-align: center;
+  margin: 0;
+}
+
 .text-right {
   text-align: right;
   margin: 0;
+}
+
+.text-green {
+  color: green;
+}
+
+.text-red {
+  color: red;
 }
 
 .dialog {
@@ -147,6 +190,11 @@ body {
 
 .icon {
   margin-right: 5px;
+}
+
+.large-icon {
+  height: 30px;
+  margin-right: 2px;
 }
 
 .card-grid {
