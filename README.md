@@ -5,11 +5,12 @@ type Market @model @searchable {
   id: ID!
   name: String!
   products: [Product] @connection(name: "MarketProducts")
+  tags: [String!]
   owner: String!
   createdAt: String
 }
 
-type Product @model @auth(rules: [{ allow: owner, mutations: [create] }]) {
+type Product @model @auth(rules: [{ allow: owner }]) {
   id: ID!
   description: String!
   market: Market @connection(name: "MarketProducts")
@@ -34,11 +35,16 @@ type User
   id: ID!
   username: String!
   registered: Boolean
-  orders: [Order] @connection(name: "UserOrders")
+  orders: [Order!] @connection(name: "UserOrders")
   createdAt: String
 }
 
-type Order @model(queries: null) {
+type Order
+  @model(
+    mutations: { create: "createOrder" }
+    queries: null
+    subscriptions: null
+  ) {
   id: ID!
   product: Product @connection
   user: User @connection(name: "UserOrders")

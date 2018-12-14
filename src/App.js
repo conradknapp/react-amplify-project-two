@@ -10,7 +10,7 @@ import createBrowserHistory from "history/createBrowserHistory";
 import StripeCheckout from "react-stripe-checkout";
 import format from "date-fns/format";
 // prettier-ignore
-import { Loading, Menu as Nav, Dialog, Button, Form, Notification, Input, Popover, Tabs, Table, Icon, Card, Tag, MessageBox, Message } from "element-react";
+import { Loading, Menu as Nav, Dialog, Button, Form, Notification, Input, Popover, Tabs, Table, Icon, Card, Tag, MessageBox, Message, Select } from "element-react";
 import { listMarkets, searchMarkets } from "./graphql/queries";
 // prettier-ignore
 import { createMarket, createProduct, registerUser, deleteProduct,createOrder } from "./graphql/mutations";
@@ -69,17 +69,57 @@ const MarketList = ({ searchResults }) => {
                 {searchResults.length} Results
               </h2>
             ) : (
-              <h2>Markets</h2>
+              <h2 className="header">
+                <img
+                  src="https://icon.now.sh/store_mall_directory/527FFF"
+                  alt="Store Icon"
+                  style={{ height: "30px", marginRight: "2px" }}
+                />
+                Markets
+              </h2>
             )}
-            <ul>
-              {markets.map(market => (
-                <li key={market.id}>
-                  <Link to={`/markets/${market.id}`}>
-                    {market.name} - {market.owner}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+
+            {markets.map(market => (
+              <div key={market.id} style={{ margin: "1em 0" }}>
+                <Card
+                  bodyStyle={{
+                    padding: "0.7em",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between"
+                  }}
+                >
+                  <div>
+                    <span style={{ display: "flex" }}>
+                      <Link className="link" to={`/markets/${market.id}`}>
+                        {market.name}
+                      </Link>{" "}
+                      <span style={{ color: "var(--darkAmazonOrange)" }}>
+                        {market.products.items.length}
+                      </span>
+                      <img
+                        src="https://icon.now.sh/shopping_cart/f60"
+                        alt="Shopping Cart"
+                      />
+                    </span>
+                    <div style={{ color: "var(--lightSquidInk)" }}>
+                      {market.owner}
+                    </div>
+                  </div>
+                  <div>
+                    {market.tags.map(tag => (
+                      <Tag
+                        key={tag}
+                        type="danger"
+                        style={{ margin: "0 0.5em" }}
+                      >
+                        {tag}
+                      </Tag>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            ))}
           </>
         );
       }}
@@ -90,35 +130,51 @@ const MarketList = ({ searchResults }) => {
 class NewMarket extends React.Component {
   state = {
     addMarketDialog: false,
-    marketName: ""
+    marketName: "",
+    options: [],
+    tags: ["Arts", "Technology", "Crafts"],
+    selectedTags: []
   };
 
   handleAddMarket = async (event, user) => {
     event.preventDefault();
-    this.setState({ addMarketDialog: false });
-    const input = {
-      name: this.state.marketName,
-      owner: user && user.username
-    };
     try {
+      this.setState({ addMarketDialog: false });
+      const input = {
+        name: this.state.marketName,
+        tags: this.state.selectedTags,
+        owner: user && user.username
+      };
       const result = await API.graphql(
         graphqlOperation(createMarket, { input })
       );
       console.info(`Created market: id ${result.data.createMarket.id}`);
       this.setState({ marketName: "" });
     } catch (err) {
-      console.error("createMarket mutation failed", err);
+      Notification.error({
+        title: "Error",
+        message: `${err.message || "Error adding market"}`
+      });
     }
   };
 
+  handleSearchTags = query => {
+    const filteredTags = this.state.tags
+      .map(tag => ({ value: tag, label: tag }))
+      .filter(tag => tag.label.toLowerCase().includes(query.toLowerCase()));
+    this.setState({ options: filteredTags });
+  };
+
   render() {
+    const { marketName } = this.state;
+
     return (
       <UserContext.Consumer>
         {({ user }) => (
           <>
             <div className="market-header">
               <h1 className="market-title">
-                Add a New Market
+                Create Your Own MarketPlace
                 <Button
                   className="market-title-button"
                   icon="edit"
@@ -163,9 +219,28 @@ class NewMarket extends React.Component {
                   <Form.Item label="Add Market Name">
                     <Input
                       placeholder="Market Name"
-                      value={this.state.marketName}
+                      value={marketName}
+                      trim={true}
                       onChange={marketName => this.setState({ marketName })}
                     />
+                  </Form.Item>
+                  <Form.Item label="Add Tags">
+                    <Select
+                      multiple={true}
+                      filterable={true}
+                      placeholder="Market Tags"
+                      onChange={selectedTags => this.setState({ selectedTags })}
+                      remote={true}
+                      remoteMethod={this.handleSearchTags}
+                    >
+                      {this.state.options.map(option => (
+                        <Select.Option
+                          key={option.value}
+                          label={option.label}
+                          value={option.value}
+                        />
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Form>
               </Dialog.Body>
@@ -178,6 +253,7 @@ class NewMarket extends React.Component {
                 </Button>
                 <Button
                   type="primary"
+                  disabled={!marketName}
                   onClick={event => this.handleAddMarket(event, user)}
                 >
                   Add
@@ -237,12 +313,27 @@ const MarketPage = ({ marketId, user }) => (
 
       return (
         <>
-          <Link to="/">Back to Markets List</Link>
-          <h2 className="header">{getMarket.name}</h2>
-          <span style={{ color: "var(--lightSquidInk)" }}>
-            {getMarket.owner} - {formatProductDate(getMarket.createdAt)}
+          <Link className="link" to="/">
+            Back to Markets List
+          </Link>
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingTop: "1em"
+            }}
+          >
+            <h2 style={{ margin: "0 0.2em 0.2em 0" }}>{getMarket.name}</h2>•{" "}
+            {getMarket.owner}
           </span>
-          <Tabs type="card" value={isMarketOwner ? "1" : "2"}>
+          <div style={{ display: "flex", alignItems: "center", margin: 0 }}>
+            <span
+              style={{ color: "var(--lightSquidInk)", paddingBottom: "1em" }}
+            >
+              <Icon name="date" /> {formatProductDate(getMarket.createdAt)}
+            </span>
+          </div>
+          <Tabs type="border-card" value={isMarketOwner ? "1" : "2"}>
             {isMarketOwner && (
               <Tabs.Pane
                 label={
@@ -275,7 +366,7 @@ const MarketPage = ({ marketId, user }) => (
 );
 
 const ProductList = ({ products }) => (
-  <div className="card-list">
+  <div className="card-grid">
     {products.map(product => (
       <Product key={product.file.key} product={product} />
     ))}
@@ -326,7 +417,7 @@ class Product extends React.Component {
                 <div className="card-body">
                   <span>{product.description}</span>
                   <div>
-                    <h3>${convertCentsToDollars(product.price)}</h3>
+                    <span>${convertCentsToDollars(product.price)}</span>
                     {!isProductOwner && (
                       <PayButton
                         productId={product.id}
@@ -338,12 +429,13 @@ class Product extends React.Component {
                   </div>
                 </div>
               </Card>
-              <div className="text-right">
+              <div style={{ textAlign: "center" }}>
                 {isProductOwner && (
                   <>
                     <Button
                       type="warning"
                       icon="edit"
+                      style={{ margin: "7px" }}
                       onClick={() =>
                         this.setState({ updateProductDialog: true })
                       }
@@ -507,8 +599,8 @@ class NewProduct extends React.Component {
     );
     console.log("Uploaded file", result);
     Notification({
-      title: `Success`,
-      message: `Product successfully created!`,
+      title: "Success",
+      message: "Product successfully created!",
       type: "success"
     });
     this.setState({ ...initialState });
@@ -519,70 +611,67 @@ class NewProduct extends React.Component {
 
     return (
       <>
-        <h2>Add New Product</h2>
-        <Form
-          inline={true}
-          onSubmit={this.handleSubmit}
-          style={{
-            margin: 0
-          }}
-        >
-          <Form.Item>
-            <Input
-              type="text"
-              placeholder="Add Description"
-              value={description}
-              onChange={description => this.setState({ description })}
+        <h2 className="header">Add New Product</h2>
+        <div className="market-header">
+          <Form onSubmit={this.handleSubmit} className="market-header">
+            <Form.Item label="Add Description">
+              <Input
+                type="text"
+                icon="information"
+                placeholder="Description"
+                value={description}
+                onChange={description => this.setState({ description })}
+              />
+            </Form.Item>
+            <Form.Item label="Add Price">
+              <Input
+                type="number"
+                icon="plus"
+                placeholder="Price (USD)"
+                value={price}
+                onChange={price => this.setState({ price })}
+              />
+            </Form.Item>
+            {imagePreview && (
+              <img
+                className="image-preview"
+                src={imagePreview}
+                alt="Product Preview"
+              />
+            )}
+            <PhotoPicker
+              title="Product Photo"
+              preview="hidden"
+              onLoad={url => this.setState({ imagePreview: url })}
+              onPick={file => this.setState({ image: file })}
+              theme={{
+                formContainer: {
+                  margin: 0,
+                  padding: "0.8em",
+                  minWidth: "250px",
+                  maxHeight: "300px"
+                },
+                sectionHeader: {
+                  padding: "0.2em",
+                  color: "var(--darkAmazonOrange)"
+                },
+                photoPickerButton: {
+                  display: "none"
+                }
+              }}
             />
-          </Form.Item>
-          <Form.Item>
-            <Input
-              type="number"
-              placeholder="Add Price"
-              value={price}
-              onChange={price => this.setState({ price })}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              onClick={this.handleSubmit}
-              disabled={!image || !description || !price || isUploading}
-              loading={isUploading}
-              type="primary"
-            >
-              {isUploading ? "Uploading..." : "Add Product"}
-            </Button>
-          </Form.Item>
-        </Form>
-        {imagePreview && (
-          <img
-            className="image-preview"
-            src={imagePreview}
-            alt="Product Preview"
-          />
-        )}
-        <PhotoPicker
-          title="Product Photo"
-          preview="hidden"
-          onLoad={url => this.setState({ imagePreview: url })}
-          onPick={file => this.setState({ image: file })}
-          theme={{
-            formContainer: {
-              margin: 0,
-              padding: "0.8em",
-              minWidth: "250px",
-              // to cut off the button at the bottom before the image preview is shown
-              maxHeight: "300px"
-            },
-            sectionHeader: {
-              padding: "0.2em",
-              color: "var(--darkAmazonOrange)"
-            },
-            photoPickerButton: {
-              background: "var(--squidInk)"
-            }
-          }}
-        />
+            <Form.Item>
+              <Button
+                onClick={this.handleSubmit}
+                disabled={!image || !description || !price || isUploading}
+                loading={isUploading}
+                type="primary"
+              >
+                {isUploading ? "Uploading..." : "Add Product"}
+              </Button>
+            </Form.Item>
+          </Form>
+        </div>
       </>
     );
   }
@@ -795,20 +884,21 @@ class ProfilePage extends React.Component {
                   name="2"
                 >
                   <h2 className="header">Order History</h2>
-                  <ul>
-                    {userOrders.map(order => (
-                      <li key={order.id}>
-                        <p>Order Id: {order.id}</p>
-
-                        <p>Desc: {order.product.description}</p>
-                        <p>
-                          Price: ${convertCentsToDollars(order.product.price)}
-                        </p>
-                        <p>Owner: {order.product.owner}</p>
-                        <p>Processed on {formatOrderDate(order.createdAt)}</p>
-                      </li>
-                    ))}
-                  </ul>
+                  {userOrders.map(order => (
+                    <div style={{ marginBottom: "0.5em" }}>
+                      <Card key={order.id}>
+                        <pre>
+                          <p>Order Id: {order.id}</p>
+                          <p>Description: {order.product.description}</p>
+                          <p>
+                            Price: ${convertCentsToDollars(order.product.price)}
+                          </p>
+                          <p>Owner: {order.product.owner}</p>
+                          <p>Purchased at {formatOrderDate(order.createdAt)}</p>
+                        </pre>
+                      </Card>
+                    </div>
+                  ))}
                 </Tabs.Pane>
               </Tabs>
 
@@ -937,7 +1027,7 @@ const Navbar = ({ user, handleSignout }) => (
         <NavLink to="/" className="nav-link">
           <span className="app-title">
             <img
-              src="https://icon.now.sh/amazon/f90"
+              src="https://icon.now.sh/account_balance/f90"
               className="app-logo"
               alt="Amazon Logo"
             />
@@ -990,7 +1080,7 @@ logger.onHubCapsule = async capsule => {
         );
         console.log({ newUser });
       } catch (err) {
-        console.log("ERR!!");
+        console.log("Error registering new user", err);
       }
     }
   }
@@ -1019,6 +1109,8 @@ class App extends React.Component {
   onHubCapsule = capsule => {
     if (capsule.payload.event === "signIn") {
       this.getAuthUser();
+      console.log("called!");
+      return;
     } else if (capsule.payload.event === "signOut") {
       this.setState({ user: null });
     }

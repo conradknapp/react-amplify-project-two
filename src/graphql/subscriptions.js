@@ -15,6 +15,7 @@ export const onCreateMarket = `subscription OnCreateMarket {
       }
       nextToken
     }
+    tags
     owner
     createdAt
   }
@@ -34,6 +35,7 @@ export const onUpdateMarket = `subscription OnUpdateMarket {
       }
       nextToken
     }
+    tags
     owner
     createdAt
   }
@@ -53,6 +55,7 @@ export const onDeleteMarket = `subscription OnDeleteMarket {
       }
       nextToken
     }
+    tags
     owner
     createdAt
   }
@@ -65,6 +68,7 @@ export const onCreateProduct = `subscription OnCreateProduct {
     market {
       id
       name
+      tags
       owner
       createdAt
     }
@@ -86,6 +90,7 @@ export const onUpdateProduct = `subscription OnUpdateProduct {
     market {
       id
       name
+      tags
       owner
       createdAt
     }
@@ -107,6 +112,7 @@ export const onDeleteProduct = `subscription OnDeleteProduct {
     market {
       id
       name
+      tags
       owner
       createdAt
     }
@@ -117,66 +123,6 @@ export const onDeleteProduct = `subscription OnDeleteProduct {
     }
     price
     owner
-    createdAt
-  }
-}
-`;
-export const onCreateOrder = `subscription OnCreateOrder {
-  onCreateOrder {
-    id
-    product {
-      id
-      description
-      price
-      owner
-      createdAt
-    }
-    user {
-      id
-      username
-      registered
-      createdAt
-    }
-    createdAt
-  }
-}
-`;
-export const onUpdateOrder = `subscription OnUpdateOrder {
-  onUpdateOrder {
-    id
-    product {
-      id
-      description
-      price
-      owner
-      createdAt
-    }
-    user {
-      id
-      username
-      registered
-      createdAt
-    }
-    createdAt
-  }
-}
-`;
-export const onDeleteOrder = `subscription OnDeleteOrder {
-  onDeleteOrder {
-    id
-    product {
-      id
-      description
-      price
-      owner
-      createdAt
-    }
-    user {
-      id
-      username
-      registered
-      createdAt
-    }
     createdAt
   }
 }

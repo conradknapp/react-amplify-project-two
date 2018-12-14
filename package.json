@@ -8,6 +8,8 @@
     "date-fns": "^1.29.0",
     "element-react": "^1.4.24",
     "element-theme-default": "^1.4.13",
+    "history": "^4.7.2",
+    "nprogress": "^0.2.0",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
     "react-router-dom": "^4.3.1",
